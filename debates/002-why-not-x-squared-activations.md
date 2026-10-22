@@ -1,11 +1,11 @@
 # Debate 002 — Why not x²? Is nonlinearity all we need, and why tanh?
 
-**Status:** open — draft 0.2
+**Status:** open — draft 0.3
 **Opened:** 2026-10-22
 **Editor:** Divyansh Tripathi
 **Written by:** AI assistant
 **Framing as asked:** "Why don't we use y = x² as an activation function? Even though it's a nonlinear function — is nonlinearity everything we need to make a function an activation function, or are we missing something? And why only tanh? Why not other trigonometric ones?"
-**Follow-up:** "...and why not e^x, since it's also nonlinear and non-polynomial?"
+**Follow-up:** "...and why not e^x, since it's also nonlinear and non-polynomial?" ... "What about log x?"
 
 ---
 
@@ -24,12 +24,12 @@ them is most of the work:
    trigonometric activations are a real, published tool — just a *specialised* one.
 
 So the debate is really: **what does an activation function actually have to do,
-and why do x², e^x, and most trigonometric functions fail that test while tanh
-passes it?**
+and why do x², e^x, log x, and most trigonometric functions fail that test while
+tanh passes it?**
 
 ---
 
-## 1. Why x² is not "just another nonlinearity"
+## 1. Why x², e^x and log x are not "just other nonlinearities"
 
 ### 1.1 It is the one case the theorem excludes
 
@@ -147,10 +147,65 @@ side, where the exponential would explode:
 
 ELU is, quite literally, "e^x with the dangerous half removed."
 
-The pair makes this artifact's point sharper than either alone: **x² fails
+The set makes this artifact's point sharper than any one case alone: **x² fails
 expressivity; e^x passes expressivity and fails conditioning.** Neither nonlinearity
 nor non-polynomiality is the currency on its own — conditioning under composition is
-co-equal.
+co-equal. And log x will fail in a third way entirely.
+
+### The third case: why not log x?
+
+Log x fails in a way neither of the others does — **it is not even defined on half
+the real line.** An activation function must be a map from ℝ to ℝ: it has to accept
+every real pre-activation — positive, zero, or negative. log x is undefined for
+x ≤ 0, so any neuron with a non-positive input produces `NaN`. This is a **domain**
+failure, and it is fatal before any question of conditioning even arises.
+
+You can patch the domain, but you then inherit a conditioning problem:
+
+- **Use log(1 + x)** (the usual fix): defined for x > −1, but its derivative is
+  1/(1+x), which → 0 as x → ∞. **Vanishing gradients for large inputs** — it
+  saturates, one-sided, like a tanh that only flattens on the right.
+- **Use log(1 + |x|), or the symmetric log:** now defined on all of ℝ, but *even*
+  (log|−x| = log|x|), so it destroys the sign — the same defect as x². Its
+  derivative, 1/(1+|x|), → 0 at *both* ends: vanishing gradients everywhere except
+  near zero.
+- **Bare log near zero:** the derivative 1/x → ∞ as x → 0⁺. So the unpatched
+  function has an *exploding* gradient at the boundary and a *vanishing* one at
+  infinity.
+
+It is also **unbounded**, so it fails the boundedness condition of the original
+Cybenko universal-approximation theorem (it does satisfy Leshno's non-polynomial
+condition, so expressivity is again not the problem).
+
+There is a symmetry worth naming: **log x and e^x are inverses** — mirror images
+across the line y = x. Where e^x explodes as x → +∞, log x explodes as x → 0⁺.
+Where e^x vanishes as x → −∞, log x's gradient vanishes as x → +∞. They are the
+*same failure, reflected*, and they are tamed by the same move: bound the domain and
+the range.
+
+**And again the field tamed it rather than discarding it.** Log is everywhere in
+machine learning — but wrapped:
+
+- **symlog** (also called the logarithmic activation function, LAF): the symmetric
+  version, effectively sign(x)·log(1+|x|), used in practice to compress huge dynamic
+  ranges — it is the reward/value transform in Dreamer-style RL agents.
+- **softplus = log(1 + e^x)** — the most famous log-based activation, and itself a
+  composition of the two functions we have been discussing.
+- **log-sigmoid = log σ(x)** — used as an activation.
+- **NLReLU = log(1 + max(0, x))** — log applied to ReLU's positive side only, keeping
+  ReLU's sparsity while softening its growth.
+
+The three candidates together form a small taxonomy of *why an activation fails* —
+and none of the reasons is "because it isn't nonlinear":
+
+| Candidate | Failure mode | Still used as |
+|---|---|---|
+| x² | **expressivity** — it is a polynomial | polynomial nets (private inference) |
+| e^x | **conditioning** — unbounded, explosive | sigmoid, tanh, softplus, ELU |
+| log x | **domain** — undefined for x ≤ 0 | symlog, softplus, log-sigmoid, NLReLU |
+
+That table is the answer to the original question, stated exactly: nonlinearity is
+the entry ticket, not the qualification.
 
 ---
 
@@ -159,16 +214,17 @@ co-equal.
 Nonlinearity is necessary and insufficient. The properties that actually matter,
 and how the usual suspects score:
 
-| Property | Why it matters | x² | e^x | tanh | ReLU | sin |
-|---|---|---|---|---|---|---|
-| Nonlinear | breaks linear collapse; **necessary** | yes | yes | yes | yes | yes |
-| Non-polynomial | universal-approximation guarantee | **no** | yes | yes | yes | yes |
-| Monotonic | *helps* optimisation; **not required** | no | yes | yes | yes | no |
-| Zero-centred output | avoids zig-zag gradient updates | no | **no** | yes | no | yes |
-| Bounded / controlled growth | numerical stability under depth | no | **no** | yes | linear | yes |
-| Well-behaved gradient | no exploding / vanishing | **no** | **explodes** | saturates | 0 or 1 | oscillates |
-| Cheap to compute | speed at scale | cheap | exp | exp | cheapest | exp |
-| Right inductive bias | matches the task | — | — | general | general | periodic |
+| Property | Why it matters | x² | e^x | log x | tanh | ReLU | sin |
+|---|---|---|---|---|---|---|---|
+| Defined on all ℝ | an activation must accept every real input | yes | yes | **no** | yes | yes | yes |
+| Nonlinear | breaks linear collapse; **necessary** | yes | yes | yes | yes | yes | yes |
+| Non-polynomial | universal-approximation guarantee | **no** | yes | yes | yes | yes | yes |
+| Monotonic | *helps* optimisation; **not required** | no | yes | yes | yes | yes | no |
+| Zero-centred output | avoids zig-zag gradient updates | no | **no** | no | yes | no | yes |
+| Bounded / controlled growth | numerical stability under depth | no | **no** | no | yes | linear | yes |
+| Well-behaved gradient | no exploding / vanishing | **no** | **explodes** | **vanishes** | saturates | 0 or 1 | oscillates |
+| Cheap to compute | speed at scale | cheap | exp | log | exp | cheapest | exp |
+| Right inductive bias | matches the task | — | — | — | general | general | periodic |
 
 Three corrections to the "nonlinearity is everything" theory fall straight out of
 this table:
@@ -264,11 +320,15 @@ search for "any nonlinear function."
    its own value — exploding on one side, vanishing on the other. The field's
    response was to *tame* it (sigmoid, tanh, softplus, softmax, ELU), not to
    discard it.
-4. **Monotonicity is a convenience, not a requirement.** The strongest modern
+4. **log x fails in a third way: it is not defined on half of ℝ.** A *domain*
+   failure, not an expressivity or conditioning one — though patched (symlog,
+   log(1+|x|)) it also inherits vanishing gradients. Log survives in machine
+   learning wrapped: symlog, softplus = log(1+e^x), log-sigmoid, NLReLU.
+5. **Monotonicity is a convenience, not a requirement.** The strongest modern
    activations are non-monotonic.
-5. **tanh is a good general squash, not the only one.** It won for zero-centredness
+6. **tanh is a good general squash, not the only one.** It won for zero-centredness
    and a healthy gradient near zero, and it lost the deep-net default to ReLU.
-6. **Trigonometric activations are a live tool, not a forbidden zone** — sin wins
+7. **Trigonometric activations are a live tool, not a forbidden zone** — sin wins
    where the signal is periodic (SIREN), and the bias term is what makes any of it
    work.
 
@@ -276,9 +336,9 @@ search for "any nonlinear function."
 
 ## 5. Open forks — your call
 
-**F1. Scope.** Keep this to "why not x² / e^x" plus "what makes an activation," or
-open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish, parametric and
-learned activations)? *The zoo is where "why choose at all?" gets answered.*
+**F1. Scope.** Keep this to "why not x² / e^x / log x" plus "what makes an
+activation," or open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish,
+parametric and learned activations)? *The zoo is where "why choose at all?" gets answered.*
 
 **F2. Mathematical depth.** Keep the one-line quadratic-form proof, or develop the
 Leshno theorem and the L²-density argument properly? *Deeper is more satisfying
@@ -322,6 +382,10 @@ table), or different?
 - LeCun, Bottou, Orr, Müller. *Efficient BackProp.* 1998.
 - Clevert, Unterthiner, Hochreiter. *Fast and Accurate Deep Network Learning by
   Exponential Linear Units (ELUs).* ICLR 2016. arXiv:1511.07289.
+- Rahman et al. *Natural-Logarithm-Rectified Activation Function in Convolutional
+  Neural Networks* (NLReLU). 2019. arXiv:1908.03682.
+- *A Comprehensive Survey of 400 Activation Functions.* 2024. (LAF / symlog,
+  log-sigmoid, logish, NLReLU, symexp.)
 - Chrysos, Moschoglou, Bouritsas, Deng, Panagakis. *Deep Polynomial Neural
   Networks.* IEEE TPAMI, 2022.
 - Dubey, Singh, Chaudhuri. *Activation Functions in Deep Learning: A Comprehensive

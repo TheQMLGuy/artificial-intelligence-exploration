@@ -157,11 +157,11 @@
 <div class="lede">
   <div class="lede__inner">
     <div class="kicker">Debate 002</div>
-    <h1 class="title">Why not x&sup2; &mdash; or e<sup>x</sup>?</h1>
-    <p class="deck">Is nonlinearity all we need? Why not the other trigonometric functions &mdash; and why not the exponential, which passes every test x&sup2; fails?</p>
+    <h1 class="title">Why not x&sup2;, e<sup>x</sup> &mdash; or log x?</h1>
+    <p class="deck">Is nonlinearity all we need? Three obvious nonlinear functions, three different reasons they fail &mdash; and none of them is &ldquo;because it isn&rsquo;t nonlinear.&rdquo;</p>
     <div class="metaline">
       <span>Status: <b>Open</b></span>
-      <span>Draft <b>0.2</b></span>
+      <span>Draft <b>0.3</b></span>
       <span>Opened <b>22 Oct 2026</b></span>
       <span>Editor <b>Divyansh Tripathi</b></span>
       <span class="stamp">Draft &middot; Not settled</span>
@@ -182,9 +182,9 @@
       <li><strong>&ldquo;tanh is the only choice, and trigonometry is unexplored.&rdquo;</strong> Both false. There is a whole zoo of activations, and trigonometric activations are a real, published tool &mdash; just a <em>specialised</em> one.</li>
     </ol>
   </div>
-  <p>So the debate is really: <strong>what does an activation function actually have to do, and why do x&sup2;, e<sup>x</sup>, and most trigonometric functions fail that test while tanh passes it?</strong></p>
+  <p>So the debate is really: <strong>what does an activation function actually have to do, and why do x&sup2;, e<sup>x</sup>, log x, and most trigonometric functions fail that test while tanh passes it?</strong></p>
 
-  <h2><span class="num">01</span>Why x&sup2; is not &ldquo;just another nonlinearity&rdquo;</h2>
+  <h2><span class="num">01</span>Why x&sup2;, e<sup>x</sup> and log x are not &ldquo;just other nonlinearities&rdquo;</h2>
 
   <h3>It is the one case the theorem excludes</h3>
   <p>There is a clean, famous result. Leshno, Lin, Pinkus &amp; Schocken (1993): a single-hidden-layer feedforward network is a universal approximator <strong>if and only if the activation function is not a polynomial</strong>. Polynomial activations are the single class the universal approximation theorem rules out.</p>
@@ -224,24 +224,55 @@
   </ul>
   <p><strong>So what did the field do?</strong> It did not throw the exponential away &mdash; it <em>tamed</em> it. Almost every bounded activation is e<sup>x</sup> in a wrapper: sigmoid is 1/(1+e<sup>&minus;x</sup>), tanh is (e<sup>x</sup> &minus; e<sup>&minus;x</sup>)/(e<sup>x</sup> + e<sup>&minus;x</sup>), softplus is log(1+e<sup>x</sup>), softmax <em>normalises</em> it, and attention uses a normalised exponential as its kernel. The most direct answer is <strong>ELU</strong> (Clevert, Unterthiner &amp; Hochreiter, 2015): keep the exponential only on the <em>negative</em> side, where it saturates gracefully, and use the identity on the positive side, where it would explode.</p>
   <div class="eq">ELU(x) = x &nbsp; if x &gt; 0<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&alpha;(e<sup>x</sup> &minus; 1) &nbsp; if x &le; 0</div>
-  <p>ELU is, quite literally, &ldquo;e<sup>x</sup> with the dangerous half removed.&rdquo; The pair makes the point sharper than either alone: <strong>x&sup2; fails expressivity; e<sup>x</sup> passes expressivity and fails conditioning.</strong> Neither nonlinearity nor non-polynomiality is the currency on its own &mdash; conditioning under composition is co-equal.</p>
+  <p>ELU is, quite literally, &ldquo;e<sup>x</sup> with the dangerous half removed.&rdquo; The set makes the point sharper than any one case alone: <strong>x&sup2; fails expressivity; e<sup>x</sup> passes expressivity and fails conditioning.</strong> Neither nonlinearity nor non-polynomiality is the currency on its own &mdash; conditioning under composition is co-equal. And log x will fail in a third way entirely.</p>
+
+  <h3>The third case: why not log x?</h3>
+  <p>Log x fails in a way neither of the others does &mdash; <strong>it is not even defined on half the real line.</strong> An activation function must be a map from &real; to &real;: it has to accept every real pre-activation &mdash; positive, zero, or negative. log x is undefined for x &le; 0, so any neuron with a non-positive input produces <code>NaN</code>. This is a <strong>domain</strong> failure, and it is fatal before any question of conditioning even arises.</p>
+  <p>You can patch the domain, but you then inherit a conditioning problem:</p>
+  <ul class="camps">
+    <li><b>Use log(1 + x)</b> (the usual fix): defined for x &gt; &minus;1, but its derivative is 1/(1+x), which &rarr; 0 as x &rarr; &infin;. <strong>Vanishing gradients for large inputs</strong> &mdash; it saturates, one-sided, like a tanh that only flattens on the right.</li>
+    <li><b>Use log(1 + |x|), or the symmetric log:</b> now defined on all of &real;, but <em>even</em> (log|&minus;x| = log|x|), so it destroys the sign &mdash; the same defect as x&sup2;. Its derivative, 1/(1+|x|), &rarr; 0 at <em>both</em> ends: vanishing gradients everywhere except near zero.</li>
+    <li><b>Bare log near zero:</b> the derivative 1/x &rarr; &infin; as x &rarr; 0&#8314;. So the unpatched function has an <em>exploding</em> gradient at the boundary and a <em>vanishing</em> one at infinity.</li>
+  </ul>
+  <p>It is also <strong>unbounded</strong>, so it fails the boundedness condition of the original Cybenko universal-approximation theorem (it does satisfy Leshno&rsquo;s non-polynomial condition, so expressivity is again not the problem).</p>
+  <p>There is a symmetry worth naming: <strong>log x and e<sup>x</sup> are inverses</strong> &mdash; mirror images across the line y = x. Where e<sup>x</sup> explodes as x &rarr; +&infin;, log x explodes as x &rarr; 0&#8314;. Where e<sup>x</sup> vanishes as x &rarr; &minus;&infin;, log x&rsquo;s gradient vanishes as x &rarr; +&infin;. They are the <em>same failure, reflected</em>, tamed by the same move: bound the domain and the range.</p>
+  <p><strong>And again the field tamed it rather than discarding it.</strong> Log is everywhere in machine learning &mdash; but wrapped:</p>
+  <ul class="camps">
+    <li><b>symlog</b> (also called the logarithmic activation function, LAF): the symmetric version, effectively sign(x)&middot;log(1+|x|), used to compress huge dynamic ranges &mdash; it is the reward/value transform in Dreamer-style RL agents.</li>
+    <li><b>softplus = log(1 + e<sup>x</sup>)</b> &mdash; the most famous log-based activation, and itself a composition of the two functions we have been discussing.</li>
+    <li><b>log-sigmoid = log &sigma;(x)</b> &mdash; used as an activation.</li>
+    <li><b>NLReLU = log(1 + max(0, x))</b> &mdash; log applied to ReLU&rsquo;s positive side only, keeping ReLU&rsquo;s sparsity while softening its growth.</li>
+  </ul>
+  <p>The three candidates together form a small taxonomy of <em>why an activation fails</em> &mdash; and none of the reasons is &ldquo;because it isn&rsquo;t nonlinear&rdquo;:</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Candidate</th><th>Failure mode</th><th>Still used as</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">x&sup2;</td><td><strong>expressivity</strong> &mdash; it is a polynomial</td><td>polynomial nets (private inference)</td></tr>
+        <tr><td class="prop">e<sup>x</sup></td><td><strong>conditioning</strong> &mdash; unbounded, explosive</td><td>sigmoid, tanh, softplus, ELU</td></tr>
+        <tr><td class="prop">log x</td><td><strong>domain</strong> &mdash; undefined for x &le; 0</td><td>symlog, softplus, log-sigmoid, NLReLU</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>That table is the answer to the original question, stated exactly: <strong>nonlinearity is the entry ticket, not the qualification.</strong></p>
 
   <h2><span class="num">02</span>So what does an activation function actually have to do?</h2>
   <p>Nonlinearity is necessary and insufficient. The properties that actually matter, and how the usual suspects score:</p>
   <div class="tablewrap">
     <table>
       <thead>
-        <tr><th>Property</th><th>Why it matters</th><th>x&sup2;</th><th>e<sup>x</sup></th><th>tanh</th><th>ReLU</th><th>sin</th></tr>
+        <tr><th>Property</th><th>Why it matters</th><th>x&sup2;</th><th>e<sup>x</sup></th><th>log x</th><th>tanh</th><th>ReLU</th><th>sin</th></tr>
       </thead>
       <tbody>
-        <tr><td class="prop">Nonlinear</td><td class="why">breaks linear collapse; <strong>necessary</strong></td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
-        <tr><td class="prop">Non-polynomial</td><td class="why">universal-approximation guarantee</td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
-        <tr><td class="prop">Monotonic</td><td class="why"><em>helps</em> optimisation; <strong>not required</strong></td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c n">no</td></tr>
-        <tr><td class="prop">Zero-centred</td><td class="why">avoids zig-zag gradient updates</td><td class="c n">no</td><td class="c n">no</td><td class="c y">yes</td><td class="c n">no</td><td class="c y">yes</td></tr>
-        <tr><td class="prop">Bounded growth</td><td class="why">numerical stability under depth</td><td class="c n">no</td><td class="c n">no</td><td class="c y">yes</td><td class="c m">linear</td><td class="c y">yes</td></tr>
-        <tr><td class="prop">Well-behaved gradient</td><td class="why">no exploding / vanishing</td><td class="c n">no</td><td class="c n">explodes</td><td class="c m">saturates</td><td class="c y">0 or 1</td><td class="c m">oscillates</td></tr>
-        <tr><td class="prop">Cheap to compute</td><td class="why">speed at scale</td><td class="c y">cheap</td><td class="c m">exp</td><td class="c m">exp</td><td class="c y">cheapest</td><td class="c m">exp</td></tr>
-        <tr><td class="prop">Right prior</td><td class="why">matches the task</td><td class="c m">&mdash;</td><td class="c m">&mdash;</td><td class="c m">general</td><td class="c m">general</td><td class="c y">periodic</td></tr>
+        <tr><td class="prop">Defined on all &real;</td><td class="why">an activation must accept every real input</td><td class="c y">yes</td><td class="c y">yes</td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Nonlinear</td><td class="why">breaks linear collapse; <strong>necessary</strong></td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Non-polynomial</td><td class="why">universal-approximation guarantee</td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Monotonic</td><td class="why"><em>helps</em> optimisation; <strong>not required</strong></td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c n">no</td></tr>
+        <tr><td class="prop">Zero-centred</td><td class="why">avoids zig-zag gradient updates</td><td class="c n">no</td><td class="c n">no</td><td class="c n">no</td><td class="c y">yes</td><td class="c n">no</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Bounded growth</td><td class="why">numerical stability under depth</td><td class="c n">no</td><td class="c n">no</td><td class="c n">no</td><td class="c y">yes</td><td class="c m">linear</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Well-behaved gradient</td><td class="why">no exploding / vanishing</td><td class="c n">no</td><td class="c n">explodes</td><td class="c n">vanishes</td><td class="c m">saturates</td><td class="c y">0 or 1</td><td class="c m">oscillates</td></tr>
+        <tr><td class="prop">Cheap to compute</td><td class="why">speed at scale</td><td class="c y">cheap</td><td class="c m">exp</td><td class="c m">log</td><td class="c m">exp</td><td class="c y">cheapest</td><td class="c m">exp</td></tr>
+        <tr><td class="prop">Right prior</td><td class="why">matches the task</td><td class="c m">&mdash;</td><td class="c m">&mdash;</td><td class="c m">&mdash;</td><td class="c m">general</td><td class="c m">general</td><td class="c y">periodic</td></tr>
       </tbody>
     </table>
   </div>
@@ -279,6 +310,7 @@
     <li><strong>Nonlinearity is necessary but not sufficient.</strong> An activation must also be non-polynomial (or otherwise escape the polynomial trap), numerically well-conditioned under depth, and carry the right inductive bias.</li>
     <li><strong>x&sup2; fails on the sharpest test and the practical ones.</strong> It is the exact class the universal approximation theorem excludes; it is lossy (sign-destroying), unbounded, and ill-conditioned.</li>
     <li><strong>e<sup>x</sup> shows non-polynomiality alone is not enough.</strong> It passes the theorem and is still unusable: unbounded, non-zero-centred, and with a gradient equal to its own value &mdash; exploding on one side, vanishing on the other. The field&rsquo;s response was to <em>tame</em> it (sigmoid, tanh, softplus, softmax, ELU), not to discard it.</li>
+    <li><strong>log x fails in a third way: it is not defined on half of &real;.</strong> A <em>domain</em> failure, not an expressivity or conditioning one &mdash; though patched (symlog, log(1+|x|)) it also inherits vanishing gradients. Log survives in machine learning wrapped: symlog, softplus = log(1+e<sup>x</sup>), log-sigmoid, NLReLU.</li>
     <li><strong>Monotonicity is a convenience, not a requirement.</strong> The strongest modern activations are non-monotonic.</li>
     <li><strong>tanh is a good general squash, not the only one.</strong> It won for zero-centredness and a healthy gradient near zero, and it lost the deep-net default to ReLU.</li>
     <li><strong>Trigonometric activations are a live tool, not a forbidden zone</strong> &mdash; sin wins where the signal is periodic, and the bias term is what makes any of it work.</li>
@@ -287,7 +319,7 @@
   <h2><span class="num">05</span>Open forks &mdash; your call</h2>
   <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
   <ul class="forks">
-    <li><span class="fid">F1</span><span class="q">Scope.</span> Keep this to &ldquo;why not x&sup2; / e<sup>x</sup>&rdquo; plus &ldquo;what makes an activation,&rdquo; or open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish, parametric and learned activations)?<span class="tr">The zoo is where &ldquo;why choose at all?&rdquo; gets answered.</span></li>
+    <li><span class="fid">F1</span><span class="q">Scope.</span> Keep this to &ldquo;why not x&sup2; / e<sup>x</sup> / log x&rdquo; plus &ldquo;what makes an activation,&rdquo; or open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish, parametric and learned activations)?<span class="tr">The zoo is where &ldquo;why choose at all?&rdquo; gets answered.</span></li>
     <li><span class="fid">F2</span><span class="q">Mathematical depth.</span> Keep the one-line quadratic-form proof, or develop the Leshno theorem and the L&sup2;-density argument properly?<span class="tr">Deeper is more satisfying but turns the artifact into a mini-course.</span></li>
     <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> Train a tiny MLP on 1-D regression &mdash; fit x&sup3; (or sin x) with x&sup2;, tanh, ReLU and sin as the activation, and watch x&sup2; fail to fit a cubic while sin nails the sine.<span class="tr">Cheap, decisive, and it would make the point unarguable.</span></li>
     <li><span class="fid">F4</span><span class="q">Learned activations as their own camp.</span> PReLU, the Pade Activation Unit, learned polynomials &mdash; the modern answer to &ldquo;why pick a fixed function at all.&rdquo;<span class="tr">Treat as a separate axis?</span></li>
@@ -303,6 +335,8 @@
       <li>Sitzmann, Martel, Bergman, Lindell, Wetzstein. <em>Implicit Neural Representations with Periodic Activation Functions</em> (SIREN). NeurIPS 2020. arXiv:2006.09661.</li>
       <li>Garimella, Jha, Reagen. <em>Sisyphus: A Cautionary Tale of Using Low-Degree Polynomial Activations in Privacy-Preserving Deep Learning.</em> 2021. arXiv:2107.12342.</li>
       <li>Clevert, Unterthiner, Hochreiter. <em>Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs).</em> ICLR 2016. arXiv:1511.07289.</li>
+      <li>Rahman et al. <em>Natural-Logarithm-Rectified Activation Function in Convolutional Neural Networks</em> (NLReLU). 2019. arXiv:1908.03682.</li>
+      <li><em>A Comprehensive Survey of 400 Activation Functions.</em> 2024. (LAF / symlog, log-sigmoid, logish, NLReLU, symexp.)</li>
       <li>Ismail et al. <em>Polynomial, trigonometric, and tropical activations.</em> 2025. arXiv:2502.01247.</li>
       <li>Hendrycks, Gimpel. <em>Gaussian Error Linear Units (GELUs).</em> arXiv:1606.08415.</li>
       <li>Misra. <em>Mish: A Self Regularized Non-Monotonic Activation Function.</em> BMVC 2020. arXiv:1908.08681.</li>
@@ -317,7 +351,7 @@
 </main>
 
 <footer>
-  <span>ml&#8209;debates &middot; Issue 002 &middot; Draft 0.2</span>
+  <span>ml&#8209;debates &middot; Issue 002 &middot; Draft 0.3</span>
   <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/ml-debates">source on GitHub</a></span>
 </footer>
 
