@@ -35,8 +35,10 @@ the editor says so; every artifact carries a status line and a draft number.
 | # | Debate | Status |
 |---|--------|--------|
 | 001 | Attention-augmented RNNs vs. LSTMs for time series | open — draft 0.2 |
+| 002 | Why not x²? Is nonlinearity all we need, and why tanh? | open — draft 0.1 |
 
 ## Files
 
-- `debates/` — the artifacts themselves.
+- `debates/` — the artifacts themselves (the source text).
+- `docs/` — the published site (GitHub Pages): an index page and one page per debate.
 - `STEERING.md` — the decision log; what the editor has decided and what is still open.

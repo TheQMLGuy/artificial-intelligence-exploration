@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate 002 — Why not x²? Is nonlinearity all we need, and why tanh? · ml-debates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-2:#faf7f0; --ink:#221e18; --text:#2b2620; --dim:#6d6357;
+    --rule:rgba(34,30,24,.17); --rule-strong:rgba(34,30,24,.4);
+    --accent:#9a3a24; --accent-2:#395650; --accent-soft:rgba(154,58,36,.08); --mark:rgba(200,168,84,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --display:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+    --maxw:1200px; --measure:680px;
+  }
+  [data-theme="dark"]{
+    --paper:#15120e; --paper-2:#1c1813; --ink:#efe8db; --text:#e5ddce; --dim:#a99e8d;
+    --rule:rgba(239,232,219,.16); --rule-strong:rgba(239,232,219,.34);
+    --accent:#e0906c; --accent-2:#84aaa0; --accent-soft:rgba(224,144,108,.1); --mark:rgba(200,168,84,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background-color:var(--paper);
+    background-image:radial-gradient(ellipse 90% 60% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(120,100,70,.012) 3px, rgba(120,100,70,.012) 4px);
+    color:var(--text); font-family:var(--serif); font-size:19px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; overflow-wrap:break-word;
+  }
+  .masthead{max-width:var(--maxw); margin:0 auto; padding:22px 32px 0;}
+  .masthead__row{display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding-bottom:12px; padding-right:58px; border-bottom:2px solid var(--ink);}
+  .masthead__brand{font-family:var(--display); font-weight:900; font-size:24px; letter-spacing:-.02em; color:var(--ink);}
+  .masthead__brand span{color:var(--accent);}
+  .masthead__tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:right;}
+  .masthead__sub{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); padding:8px 0 0;}
+  .masthead__sub a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule);}
+  .masthead__sub a:hover{color:var(--accent); border-color:var(--accent);}
+
+  .lede{max-width:var(--maxw); margin:0 auto; padding:64px 32px 0;}
+  .lede__inner{max-width:900px;}
+  .kicker{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .kicker::before{content:""; width:34px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-family:var(--display); font-weight:900; font-size:clamp(36px,6vw,68px); line-height:1.03; letter-spacing:-.025em; color:var(--ink); margin:0 0 24px; text-wrap:balance;}
+  .deck{font-size:clamp(19px,2vw,23px); line-height:1.5; font-style:italic; color:var(--dim); max-width:46ch; margin:0 0 34px;}
+  .metaline{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); border-top:1px solid var(--rule); padding-top:16px;}
+  .metaline b{color:var(--text); font-weight:500;}
+  .stamp{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1.5px solid var(--accent); border-radius:3px; padding:5px 11px; transform:rotate(-2.2deg); opacity:.92; white-space:nowrap;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:56px 32px 40px;}
+  article{max-width:var(--measure); margin:0 auto; position:relative;}
+  article p{margin:0 0 1.35em;}
+  .lead{font-size:1.1em; line-height:1.62; color:var(--ink);}
+  .lead--drop::first-letter{float:left; font-family:var(--display); font-weight:900; font-size:3.4em; line-height:.8; padding:6px 12px 0 0; color:var(--accent);}
+  h2{font-family:var(--display); font-weight:600; font-size:clamp(25px,3.1vw,33px); line-height:1.12; letter-spacing:-.015em; color:var(--ink); margin:64px 0 20px; position:relative; text-wrap:balance;}
+  h2 .num{position:absolute; left:-3.6rem; top:.15em; font-family:var(--mono); font-size:.62em; font-weight:500; color:var(--accent);}
+  h3{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); margin:40px 0 12px;}
+  strong{color:var(--ink); font-weight:600;}
+  a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px;}
+  .ed{display:block; font-family:var(--mono); font-size:12.5px; line-height:1.55; color:var(--accent); border-left:2px solid var(--accent); padding:2px 0 2px 14px; margin:18px 0;}
+
+  .framing{border:1px solid var(--rule-strong); background:var(--paper-2); padding:26px 28px 22px; margin:34px 0; position:relative;}
+  .framing__label{position:absolute; top:-11px; left:22px; background:var(--paper); padding:0 10px; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);}
+  .framing p:last-child{margin-bottom:0;}
+  .framing ol{margin:10px 0 0; padding-left:1.4em;}
+  .framing li{margin-bottom:8px;}
+
+  /* display equation */
+  .eq{font-family:var(--mono); font-size:15.5px; line-height:1.9; text-align:center; background:var(--paper-2); border:1px solid var(--rule); border-radius:2px; padding:18px 16px; margin:26px 0; overflow-x:auto; color:var(--ink);}
+  .eq--lead{border-left:3px solid var(--accent);}
+  code{font-family:var(--mono); font-size:.88em; background:var(--accent-soft); color:var(--accent); padding:1px 5px; border-radius:2px;}
+
+  .camps{list-style:none; margin:26px 0 34px; padding:0; counter-reset:camp; border-top:1px solid var(--rule);}
+  .camps li{counter-increment:camp; position:relative; padding:18px 0 18px 58px; border-bottom:1px solid var(--rule); font-size:1.02em;}
+  .camps li::before{content:counter(camp,decimal-leading-zero); position:absolute; left:0; top:16px; font-family:var(--display); font-weight:900; font-size:26px; color:var(--accent); line-height:1;}
+  .camps b{display:block; font-family:var(--display); font-weight:600; font-size:1.06em; letter-spacing:-.01em; color:var(--ink);}
+
+  /* property table */
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule-strong); background:var(--paper-2); margin:30px 0;}
+  table{border-collapse:collapse; width:100%; min-width:600px; font-size:15px; line-height:1.45;}
+  thead th{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:12px 14px; border-bottom:1.5px solid var(--rule-strong); vertical-align:bottom;}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.prop{font-weight:600; color:var(--ink); width:20%;}
+  td.why{color:var(--dim); font-size:13.5px; width:30%;}
+  td.c{text-align:center; font-family:var(--mono); font-size:12px; white-space:nowrap;}
+  .y{color:var(--accent-2); font-weight:600;}
+  .n{color:var(--accent); font-weight:600;}
+  .m{color:var(--dim);}
+  .tcap{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.04em; margin-top:-18px; margin-bottom:30px; line-height:1.5;}
+
+  .reading{counter-reset:r; list-style:none; padding:0; margin:24px 0 34px;}
+  .reading li{counter-increment:r; position:relative; padding:0 0 20px 46px;}
+  .reading li::before{content:counter(r); position:absolute; left:0; top:1px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); border:1px solid var(--accent); border-radius:50%;}
+
+  .pull{margin:44px 0; padding-left:26px; border-left:3px solid var(--accent);}
+  .pull p{font-family:var(--display); font-weight:400; font-size:clamp(22px,2.6vw,28px); line-height:1.28; letter-spacing:-.01em; color:var(--ink); font-style:italic; margin:0;}
+
+  .forks{list-style:none; padding:0; margin:26px 0 20px;}
+  .forks li{position:relative; padding:16px 0 16px 34px; border-top:1px solid var(--rule);}
+  .forks li:last-child{border-bottom:1px solid var(--rule);}
+  .forks li::before{content:""; position:absolute; left:0; top:20px; width:14px; height:14px; border:1.5px solid var(--accent); border-radius:2px;}
+  .forks .fid{font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent); margin-right:8px;}
+  .forks .q{color:var(--ink); font-weight:500;}
+  .forks .tr{display:block; margin-top:6px; font-size:.9em; color:var(--dim); font-style:italic;}
+
+  .endnotes{margin-top:56px; border-top:2px solid var(--ink); padding-top:22px;}
+  .endnotes h2{font-size:15px; margin:0 0 18px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .endnotes ol{list-style:none; counter-reset:e; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .endnotes li{counter-increment:e; position:relative; padding:0 0 12px 34px; color:var(--dim);}
+  .endnotes li::before{content:counter(e)"."; position:absolute; left:0; top:0; font-family:var(--mono); font-size:12.5px; color:var(--accent);}
+  .endnotes li em{color:var(--text); font-style:italic;}
+
+  footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
+  footer a{color:var(--accent);}
+
+  .toggle{position:fixed; top:16px; right:16px; z-index:50; background:var(--paper-2); border:1px solid var(--rule-strong); border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); transition:color .15s ease, border-color .15s ease;}
+  .toggle:hover{color:var(--accent); border-color:var(--accent);}
+  .toggle svg{width:18px; height:18px;}
+  [data-theme="light"] .toggle__moon{display:none;}
+  [data-theme="dark"] .toggle__sun{display:none;}
+  mark{background:var(--mark); color:inherit; padding:0 3px; border-radius:2px;}
+
+  @media (max-width:640px){ .masthead__tag{display:none;} .masthead__sub span:last-child{display:none;} }
+  @media (max-width:900px){
+    body{font-size:18px;}
+    h1.title{font-size:clamp(32px,8.4vw,52px);}
+    .masthead,main,.lede,footer{padding-left:22px; padding-right:22px;}
+    h2 .num{position:static; display:block; margin-bottom:6px; font-size:.72em;}
+    .tcap{margin-top:-10px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
+  ::selection{background:var(--accent); color:var(--paper);}
+</style>
+</head>
+<body>
+
+<button class="toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <svg class="toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+
+<header class="masthead">
+  <div class="masthead__row">
+    <div class="masthead__brand">ml&#8209;debates<span>.</span></div>
+    <div class="masthead__tag">Written by AI<br>Directed by a human</div>
+  </div>
+  <div class="masthead__sub">
+    <span><a href="index.html">All debates</a> &middot; Debate 002</span>
+    <span><a href="debate-001-attention-vs-lstm.html">&larr; Debate 001</a></span>
+  </div>
+</header>
+
+<div class="lede">
+  <div class="lede__inner">
+    <div class="kicker">Debate 002</div>
+    <h1 class="title">Why not x&sup2;?</h1>
+    <p class="deck">Is nonlinearity all we need? And why tanh — why not the other trigonometric functions?</p>
+    <div class="metaline">
+      <span>Status: <b>Open</b></span>
+      <span>Draft <b>0.1</b></span>
+      <span>Opened <b>22 Oct 2026</b></span>
+      <span>Editor <b>Divyansh Tripathi</b></span>
+      <span class="stamp">Draft &middot; Not settled</span>
+    </div>
+  </div>
+</div>
+
+<main>
+<article>
+
+  <h2><span class="num">00</span>Framing: the question carries three assumptions</h2>
+  <p class="lead lead--drop">The question bundles three claims, and all three are false or half-true. Naming them is most of the work.</p>
+  <div class="framing">
+    <span class="framing__label">The three assumptions</span>
+    <ol>
+      <li><strong>&ldquo;A function is an activation function iff it is nonlinear.&rdquo;</strong> Nonlinearity is <em>necessary</em> but nowhere near <em>sufficient</em>.</li>
+      <li><strong>&ldquo;Nonlinearity is everything we need.&rdquo;</strong> No &mdash; the <em>shape</em> of the nonlinearity, and how it behaves under composition and gradient flow, matters more than the mere fact of being nonlinear.</li>
+      <li><strong>&ldquo;tanh is the only choice, and trigonometry is unexplored.&rdquo;</strong> Both false. There is a whole zoo of activations, and trigonometric activations are a real, published tool &mdash; just a <em>specialised</em> one.</li>
+    </ol>
+  </div>
+  <p>So the debate is really: <strong>what does an activation function actually have to do, and why do x&sup2; and most trigonometric functions fail that test while tanh passes it?</strong></p>
+
+  <h2><span class="num">01</span>Why x&sup2; is not &ldquo;just another nonlinearity&rdquo;</h2>
+
+  <h3>It is the one case the theorem excludes</h3>
+  <p>There is a clean, famous result. Leshno, Lin, Pinkus &amp; Schocken (1993): a single-hidden-layer feedforward network is a universal approximator <strong>if and only if the activation function is not a polynomial</strong>. Polynomial activations are the single class the universal approximation theorem rules out.</p>
+  <p>That is not a heuristic &mdash; it is an iff. x&sup2; sits exactly in the excluded class. Hornik&rsquo;s earlier results had given <em>sufficient</em> conditions (bounded, continuous, non-constant); Leshno et al. sharpened it to the minimal necessary-and-sufficient condition, and &ldquo;non-polynomial&rdquo; is it.</p>
+
+  <h3>The one-line proof</h3>
+  <p>A single hidden layer with activation &sigma; computes:</p>
+  <div class="eq">y = &Sigma;<sub>j</sub> v<sub>j</sub> &middot; &sigma;(w<sub>j</sub>&middot;x + b<sub>j</sub>)</div>
+  <p>Put &sigma;(t) = t&sup2;. Each term is v<sub>j</sub>(w<sub>j</sub>&middot;x + b<sub>j</sub>)&sup2;, and the sum expands to:</p>
+  <div class="eq eq--lead">y = x<sup>T</sup>A x + c<sup>T</sup>x + d</div>
+  <p>&mdash; a <strong>quadratic form</strong>. So no matter how wide you make the layer, a one-hidden-layer x&sup2; network is <em>just a quadratic polynomial in the input</em>. It cannot represent x&sup3;, or sin(x), or anything that is not a degree-2 polynomial. Adding width adds nothing; the model class is frozen at &ldquo;parabolas.&rdquo;</p>
+  <p>This is why &ldquo;it&rsquo;s nonlinear, so it should work&rdquo; fails: nonlinearity is not the currency. The currency is whether the family of functions you can build is <em>dense</em> in the space of functions you care about.</p>
+
+  <h3>Depth does not rescue it &mdash; it wrecks it</h3>
+  <p>You might think: fine, stack layers. Composing L quadratic layers gives a polynomial of degree 2<sup>L</sup>. Polynomials <em>are</em> dense, so asymptotically this is technically a universal approximator again. In practice it is a disaster:</p>
+  <ul class="camps">
+    <li><b>Values explode.</b> |x|<sup>2<sup>L</sup></sup> grows doubly-exponentially with depth. Forward activations leave the well-behaved range and overflow to NaN &mdash; the &ldquo;escaping activation problem&rdquo; documented in the <em>Sisyphus</em> study of polynomial activations.</li>
+    <li><b>Gradients are ill-conditioned.</b> The derivative is 2x &mdash; unbounded, so gradient magnitude depends on how big the activations happen to be. Near zero the gradient vanishes; far from zero it explodes. You get <em>both</em> classic pathologies depending on the region.</li>
+  </ul>
+
+  <h3>It is also lossy and badly shaped</h3>
+  <p><strong>Not injective.</strong> x&sup2; maps x and &minus;x to the same value. A single unit literally cannot tell a positive pre-activation from its negative &mdash; the sign is destroyed. <strong>Not monotonic.</strong> It goes down then up, with a stationary point at 0. <strong>Unbounded above, non-negative range [0, &infin;).</strong> It can never output a negative value, and it has no ceiling.</p>
+
+  <h3>But it is not &ldquo;forbidden&rdquo; &mdash; it is a bad default</h3>
+  <p>Honesty demands the caveat. x&sup2; and polynomial activations <em>are</em> used, where the objective is different: <strong>privacy-preserving inference</strong> replaces ReLU with x&sup2; because x&sup2; is just a multiply under homomorphic encryption, cutting latency dramatically &mdash; the <em>Sisyphus</em> paper exists precisely because practitioners want it to work, and documents why it struggles past a few layers. And recent <strong>polynomial / Hermite activations</strong> (2025) can train GPT-2 and ConvNeXt, but only with a carefully designed variance-preserving initialisation.</p>
+  <p>So the accurate statement is: <strong>x&sup2; is not illegal, it is a poor general-purpose prior.</strong> It needs special handling and buys you less expressivity per layer.</p>
+
+  <h2><span class="num">02</span>So what does an activation function actually have to do?</h2>
+  <p>Nonlinearity is necessary and insufficient. The properties that actually matter, and how the usual suspects score:</p>
+  <div class="tablewrap">
+    <table>
+      <thead>
+        <tr><th>Property</th><th>Why it matters</th><th>x&sup2;</th><th>tanh</th><th>ReLU</th><th>sin</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="prop">Nonlinear</td><td class="why">breaks linear collapse; <strong>necessary</strong></td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Non-polynomial</td><td class="why">universal-approximation guarantee</td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Monotonic</td><td class="why"><em>helps</em> optimisation; <strong>not required</strong></td><td class="c n">no</td><td class="c y">yes</td><td class="c y">yes</td><td class="c n">no</td></tr>
+        <tr><td class="prop">Zero-centred</td><td class="why">avoids zig-zag gradient updates</td><td class="c n">no</td><td class="c y">yes</td><td class="c n">no</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Bounded growth</td><td class="why">numerical stability under depth</td><td class="c n">no</td><td class="c y">yes</td><td class="c m">linear</td><td class="c y">yes</td></tr>
+        <tr><td class="prop">Well-behaved gradient</td><td class="why">no exploding / vanishing</td><td class="c n">no</td><td class="c m">saturates</td><td class="c y">0 or 1</td><td class="c m">oscillates</td></tr>
+        <tr><td class="prop">Cheap to compute</td><td class="why">speed at scale</td><td class="c y">cheap</td><td class="c m">exp</td><td class="c y">cheapest</td><td class="c m">exp</td></tr>
+        <tr><td class="prop">Right prior</td><td class="why">matches the task</td><td class="c m">&mdash;</td><td class="c m">general</td><td class="c m">general</td><td class="c y">periodic</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tcap">Three corrections fall straight out of this table. (1) <strong>Non-polynomiality</strong> is the actual requirement for the classical guarantee &mdash; the exact thing x&sup2; lacks. (2) <strong>Monotonicity is not required</strong> &mdash; GELU, Swish and Mish are all non-monotonic and are state of the art. (3) <strong>Conditioning beats expressivity in practice</strong> &mdash; the activation that wins keeps gradients sane through many layers.</p>
+
+  <div class="pull"><p>A shallow polynomial network is too weak; a deep one is too unstable. That is the whole problem with x&sup2; in one sentence.</p></div>
+
+  <h2><span class="num">03</span>Why tanh &mdash; and why not (only) the other trigonometric functions?</h2>
+
+  <h3>Why tanh won, historically</h3>
+  <ul class="camps">
+    <li><b>A bounded, smooth, monotonic squash</b> with range (&minus;1, 1): numerically safe, differentiable everywhere, and it satisfies the sigmoidal universal-approximation conditions.</li>
+    <li><b>Zero-centred</b>, unlike the logistic sigmoid. This is the real reason it beat sigmoid: if every activation feeding a neuron is positive, the gradient w.r.t. the weights is always all-positive or all-negative, so the weight vector can only move along one diagonal and must &ldquo;zig-zag&rdquo; to reach the target. LeCun called this out in <em>Efficient BackProp</em>; tanh removes it.</li>
+    <li><b>Bigger gradient near the origin.</b> Sigmoid&rsquo;s derivative peaks at 0.25; tanh&rsquo;s reaches 1.0 &mdash; larger local gradients mean faster learning in the linear regime.</li>
+    <li><b>It is a rescaled logistic:</b> tanh(x) = 2&sigma;(2x) &minus; 1, so it inherits sigmoid&rsquo;s guarantees for free.</li>
+    <li><b>It pairs naturally with gates.</b> In an LSTM, logistic sigmoids gate the flow and tanh squashes the cell state.</li>
+  </ul>
+
+  <h3>But tanh has real weaknesses</h3>
+  <p>It <em>saturates</em>: for large |x| the gradient goes to zero, giving the vanishing-gradient problem in deep stacks. It also costs an exponentiation. Those two facts are exactly why <strong>ReLU displaced tanh</strong> as the deep-net default &mdash; ReLU is monotone, piecewise-linear (gradient 0 or 1, never tiny on the positive side), and dirt cheap. &ldquo;Why only tanh?&rdquo; has a one-word answer: <em>it isn&rsquo;t</em> &mdash; it is a legacy default that lost the crown.</p>
+
+  <h3>The trigonometric question</h3>
+  <p>It is not that trigonometry is forbidden. It is that <strong>most trigonometric functions violate the properties in the table</strong>:</p>
+  <ul class="camps">
+    <li><b>sin and cos are periodic.</b> They map inputs that are far apart to the same output &mdash; not injective everywhere, with infinitely many local minima. For a general function approximator on an unbounded domain, periodicity is the wrong prior: it says &ldquo;the world repeats,&rdquo; true for signals and false for most everything else.</li>
+    <li><b>A lovely subtlety.</b> In the 1993 theorem the <em>threshold</em> (bias) is essential. The family {sin(w&middot;x)} contains only <em>odd</em> functions, so without a bias term it cannot even represent cos(x) &mdash; an even function. The offset is not a detail; it is what makes the family dense.</li>
+    <li><b>tan is hopeless</b> as an activation: poles, undefined at &pi;/2, unbounded.</li>
+  </ul>
+  <p>And yet <strong>sin is used</strong> &mdash; where periodicity <em>is</em> the right prior. <strong>SIREN</strong> (Sitzmann et al., 2020) uses sin as the activation for implicit neural representations: it represents images, audio, wavefields and 3-D shapes <em>and their derivatives</em> far better than ReLU or tanh, and it has an elegant property &mdash; the derivative of a SIREN is itself a SIREN (d/dx sin = cos = a phase-shifted sin). It needs a carefully designed initialisation (&omega;&#8320; = 30 for the first layer), the price of the periodic prior. And <strong>Fourier / trigonometric activations</strong> (2025) can train GPT-2 and ConvNeXt using a trigonometric basis.</p>
+  <p>So the honest answer to &ldquo;why not other trigonometric ones?&rdquo; is: <strong>sin is not unused &mdash; it is specialised.</strong> tanh is a general-purpose squash built from exponentials; sin is a periodic prior that wins exactly when the data is periodic. Choosing an activation is choosing an <em>inductive bias</em>, not searching for &ldquo;any nonlinear function.&rdquo;</p>
+
+  <h2><span class="num">04</span>What the evidence, read together, suggests</h2>
+  <p>This is a reading, not a verdict. The editor decides what stands.</p>
+  <ol class="reading">
+    <li><strong>Nonlinearity is necessary but not sufficient.</strong> An activation must also be non-polynomial (or otherwise escape the polynomial trap), numerically well-conditioned under depth, and carry the right inductive bias.</li>
+    <li><strong>x&sup2; fails on the sharpest test and the practical ones.</strong> It is the exact class the universal approximation theorem excludes; it is lossy (sign-destroying), unbounded, and ill-conditioned.</li>
+    <li><strong>Monotonicity is a convenience, not a requirement.</strong> The strongest modern activations are non-monotonic.</li>
+    <li><strong>tanh is a good general squash, not the only one.</strong> It won for zero-centredness and a healthy gradient near zero, and it lost the deep-net default to ReLU.</li>
+    <li><strong>Trigonometric activations are a live tool, not a forbidden zone</strong> &mdash; sin wins where the signal is periodic, and the bias term is what makes any of it work.</li>
+  </ol>
+
+  <h2><span class="num">05</span>Open forks &mdash; your call</h2>
+  <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
+  <ul class="forks">
+    <li><span class="fid">F1</span><span class="q">Scope.</span> Keep this to &ldquo;why not x&sup2;&rdquo; plus &ldquo;what makes an activation,&rdquo; or open it into the full zoo (ReLU family, GELU, Swish, Mish, parametric and learned activations)?<span class="tr">The zoo is where &ldquo;why choose at all?&rdquo; gets answered.</span></li>
+    <li><span class="fid">F2</span><span class="q">Mathematical depth.</span> Keep the one-line quadratic-form proof, or develop the Leshno theorem and the L&sup2;-density argument properly?<span class="tr">Deeper is more satisfying but turns the artifact into a mini-course.</span></li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> Train a tiny MLP on 1-D regression &mdash; fit x&sup3; (or sin x) with x&sup2;, tanh, ReLU and sin as the activation, and watch x&sup2; fail to fit a cubic while sin nails the sine.<span class="tr">Cheap, decisive, and it would make the point unarguable.</span></li>
+    <li><span class="fid">F4</span><span class="q">Learned activations as their own camp.</span> PReLU, the Pade Activation Unit, learned polynomials &mdash; the modern answer to &ldquo;why pick a fixed function at all.&rdquo;<span class="tr">Treat as a separate axis?</span></li>
+    <li><span class="fid">F5</span><span class="q">Deliverable shape.</span> Same as Debate 001 (single essay + living evidence table), or different?</li>
+    <li><span class="fid">F6</span><span class="q">Verdict policy.</span> Same as Debate 001 &mdash; does a debate ever get marked <em>settled</em>?</li>
+  </ul>
+
+  <section class="endnotes">
+    <h2>Sources</h2>
+    <ol>
+      <li>Leshno, Lin, Pinkus, Schocken. <em>Multilayer feedforward networks with a nonpolynomial activation function can approximate any function.</em> Neural Networks 6(6), 1993.</li>
+      <li>Hornik. <em>Approximation capabilities of multilayer feedforward networks.</em> Neural Networks, 1991.</li>
+      <li>Sitzmann, Martel, Bergman, Lindell, Wetzstein. <em>Implicit Neural Representations with Periodic Activation Functions</em> (SIREN). NeurIPS 2020. arXiv:2006.09661.</li>
+      <li>Garimella, Jha, Reagen. <em>Sisyphus: A Cautionary Tale of Using Low-Degree Polynomial Activations in Privacy-Preserving Deep Learning.</em> 2021. arXiv:2107.12342.</li>
+      <li>Ismail et al. <em>Polynomial, trigonometric, and tropical activations.</em> 2025. arXiv:2502.01247.</li>
+      <li>Hendrycks, Gimpel. <em>Gaussian Error Linear Units (GELUs).</em> arXiv:1606.08415.</li>
+      <li>Misra. <em>Mish: A Self Regularized Non-Monotonic Activation Function.</em> BMVC 2020. arXiv:1908.08681.</li>
+      <li>Wu et al. <em>Learning a Single Neuron for Non-monotonic Activation Functions.</em> AISTATS 2022.</li>
+      <li>LeCun, Bottou, Orr, M&uuml;ller. <em>Efficient BackProp.</em> 1998.</li>
+      <li>Chrysos, Moschoglou, Bouritsas, Deng, Panagakis. <em>Deep Polynomial Neural Networks.</em> IEEE TPAMI, 2022.</li>
+      <li>Dubey, Singh, Chaudhuri. <em>Activation Functions in Deep Learning: A Comprehensive Survey and Benchmark.</em> arXiv:2109.14545.</li>
+    </ol>
+  </section>
+
+</article>
+</main>
+
+<footer>
+  <span>ml&#8209;debates &middot; Issue 002 &middot; Draft 0.1</span>
+  <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/ml-debates">source on GitHub</a></span>
+</footer>
+
+<script>
+  function toggleTheme(){
+    var el=document.documentElement;
+    el.setAttribute('data-theme', el.getAttribute('data-theme')==='dark'?'light':'dark');
+  }
+</script>
+</body>
+</html>
