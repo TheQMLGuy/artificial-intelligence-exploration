@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate 003 — Can a CNN do time series? Why, and how well? · ml-debates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-2:#faf7f0; --ink:#221e18; --text:#2b2620; --dim:#6d6357;
+    --rule:rgba(34,30,24,.17); --rule-strong:rgba(34,30,24,.4);
+    --accent:#9a3a24; --accent-2:#395650; --accent-soft:rgba(154,58,36,.08); --mark:rgba(200,168,84,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --display:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+    --maxw:1200px; --measure:680px;
+  }
+  [data-theme="dark"]{
+    --paper:#15120e; --paper-2:#1c1813; --ink:#efe8db; --text:#e5ddce; --dim:#a99e8d;
+    --rule:rgba(239,232,219,.16); --rule-strong:rgba(239,232,219,.34);
+    --accent:#e0906c; --accent-2:#84aaa0; --accent-soft:rgba(224,144,108,.1); --mark:rgba(200,168,84,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background-color:var(--paper);
+    background-image:radial-gradient(ellipse 90% 60% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(120,100,70,.012) 3px, rgba(120,100,70,.012) 4px);
+    color:var(--text); font-family:var(--serif); font-size:19px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; overflow-wrap:break-word;
+  }
+  .masthead{max-width:var(--maxw); margin:0 auto; padding:22px 32px 0;}
+  .masthead__row{display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding-bottom:12px; padding-right:58px; border-bottom:2px solid var(--ink);}
+  .masthead__brand{font-family:var(--display); font-weight:900; font-size:24px; letter-spacing:-.02em; color:var(--ink);}
+  .masthead__brand span{color:var(--accent);}
+  .masthead__tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:right;}
+  .masthead__sub{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); padding:8px 0 0;}
+  .masthead__sub a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule);}
+  .masthead__sub a:hover{color:var(--accent); border-color:var(--accent);}
+
+  .lede{max-width:var(--maxw); margin:0 auto; padding:64px 32px 0;}
+  .lede__inner{max-width:900px;}
+  .kicker{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .kicker::before{content:""; width:34px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-family:var(--display); font-weight:900; font-size:clamp(36px,6vw,68px); line-height:1.03; letter-spacing:-.025em; color:var(--ink); margin:0 0 24px; text-wrap:balance;}
+  .deck{font-size:clamp(19px,2vw,23px); line-height:1.5; font-style:italic; color:var(--dim); max-width:48ch; margin:0 0 34px;}
+  .metaline{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); border-top:1px solid var(--rule); padding-top:16px;}
+  .metaline b{color:var(--text); font-weight:500;}
+  .stamp{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1.5px solid var(--accent); border-radius:3px; padding:5px 11px; transform:rotate(-2.2deg); opacity:.92; white-space:nowrap;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:56px 32px 40px;}
+  article{max-width:var(--measure); margin:0 auto; position:relative;}
+  article p{margin:0 0 1.35em;}
+  .lead{font-size:1.1em; line-height:1.62; color:var(--ink);}
+  .lead--drop::first-letter{float:left; font-family:var(--display); font-weight:900; font-size:3.4em; line-height:.8; padding:6px 12px 0 0; color:var(--accent);}
+  h2{font-family:var(--display); font-weight:600; font-size:clamp(25px,3.1vw,33px); line-height:1.12; letter-spacing:-.015em; color:var(--ink); margin:64px 0 20px; position:relative; text-wrap:balance;}
+  h2 .num{position:absolute; left:-3.6rem; top:.15em; font-family:var(--mono); font-size:.62em; font-weight:500; color:var(--accent);}
+  h3{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); margin:40px 0 12px;}
+  strong{color:var(--ink); font-weight:600;}
+  a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px;}
+  .ed{display:block; font-family:var(--mono); font-size:12.5px; line-height:1.55; color:var(--accent); border-left:2px solid var(--accent); padding:2px 0 2px 14px; margin:18px 0;}
+
+  .framing{border:1px solid var(--rule-strong); background:var(--paper-2); padding:26px 28px 22px; margin:34px 0; position:relative;}
+  .framing__label{position:absolute; top:-11px; left:22px; background:var(--paper); padding:0 10px; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);}
+  .framing p:last-child{margin-bottom:0;}
+  .framing ol{margin:10px 0 0; padding-left:1.4em;}
+  .framing li{margin-bottom:8px;}
+
+  .eq{font-family:var(--mono); font-size:15.5px; line-height:1.9; text-align:center; background:var(--paper-2); border:1px solid var(--rule); border-radius:2px; padding:18px 16px; margin:26px 0; overflow-x:auto; color:var(--ink);}
+  .eq--lead{border-left:3px solid var(--accent);}
+  code{font-family:var(--mono); font-size:.88em; background:var(--accent-soft); color:var(--accent); padding:1px 5px; border-radius:2px;}
+
+  .camps{list-style:none; margin:26px 0 34px; padding:0; counter-reset:camp; border-top:1px solid var(--rule);}
+  .camps li{counter-increment:camp; position:relative; padding:18px 0 18px 58px; border-bottom:1px solid var(--rule); font-size:1.02em;}
+  .camps li::before{content:counter(camp,decimal-leading-zero); position:absolute; left:0; top:16px; font-family:var(--display); font-weight:900; font-size:26px; color:var(--accent); line-height:1;}
+  .camps b{display:block; font-family:var(--display); font-weight:600; font-size:1.06em; letter-spacing:-.01em; color:var(--ink);}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule-strong); background:var(--paper-2); margin:30px 0;}
+  table{border-collapse:collapse; width:100%; min-width:520px; font-size:15px; line-height:1.45;}
+  thead th{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:12px 14px; border-bottom:1.5px solid var(--rule-strong); vertical-align:bottom;}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.prop{font-weight:600; color:var(--ink); width:38%;}
+  td.c{text-align:center; font-family:var(--mono); font-size:13px;}
+  td.win{color:var(--accent-2); font-weight:600;}
+  .tcap{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.04em; margin-top:-18px; margin-bottom:30px; line-height:1.5;}
+
+  .reading{counter-reset:r; list-style:none; padding:0; margin:24px 0 34px;}
+  .reading li{counter-increment:r; position:relative; padding:0 0 20px 46px;}
+  .reading li::before{content:counter(r); position:absolute; left:0; top:1px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); border:1px solid var(--accent); border-radius:50%;}
+
+  .pull{margin:44px 0; padding-left:26px; border-left:3px solid var(--accent);}
+  .pull p{font-family:var(--display); font-weight:400; font-size:clamp(22px,2.6vw,28px); line-height:1.28; letter-spacing:-.01em; color:var(--ink); font-style:italic; margin:0;}
+
+  .forks{list-style:none; padding:0; margin:26px 0 20px;}
+  .forks li{position:relative; padding:16px 0 16px 34px; border-top:1px solid var(--rule);}
+  .forks li:last-child{border-bottom:1px solid var(--rule);}
+  .forks li::before{content:""; position:absolute; left:0; top:20px; width:14px; height:14px; border:1.5px solid var(--accent); border-radius:2px;}
+  .forks .fid{font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent); margin-right:8px;}
+  .forks .q{color:var(--ink); font-weight:500;}
+  .forks .tr{display:block; margin-top:6px; font-size:.9em; color:var(--dim); font-style:italic;}
+
+  .cross{border:1px solid var(--rule-strong); background:var(--paper-2); padding:24px 26px 8px; margin:40px 0; position:relative;}
+  .cross .framing__label{background:var(--paper);}
+  .cross ul{list-style:none; padding:0; margin:0;}
+  .cross li{position:relative; padding:8px 0 12px 22px; font-size:.98em; border-top:1px solid var(--rule);}
+  .cross li:first-child{border-top:none;}
+  .cross li::before{content:"\2014"; position:absolute; left:0; top:8px; color:var(--accent);}
+
+  .endnotes{margin-top:56px; border-top:2px solid var(--ink); padding-top:22px;}
+  .endnotes h2{font-size:15px; margin:0 0 18px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .endnotes ol{list-style:none; counter-reset:e; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .endnotes li{counter-increment:e; position:relative; padding:0 0 12px 34px; color:var(--dim);}
+  .endnotes li::before{content:counter(e)"."; position:absolute; left:0; top:0; font-family:var(--mono); font-size:12.5px; color:var(--accent);}
+  .endnotes li em{color:var(--text); font-style:italic;}
+
+  footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
+  footer a{color:var(--accent);}
+
+  .toggle{position:fixed; top:16px; right:16px; z-index:50; background:var(--paper-2); border:1px solid var(--rule-strong); border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); transition:color .15s ease, border-color .15s ease;}
+  .toggle:hover{color:var(--accent); border-color:var(--accent);}
+  .toggle svg{width:18px; height:18px;}
+  [data-theme="light"] .toggle__moon{display:none;}
+  [data-theme="dark"] .toggle__sun{display:none;}
+  mark{background:var(--mark); color:inherit; padding:0 3px; border-radius:2px;}
+
+  @media (max-width:640px){ .masthead__tag{display:none;} .masthead__sub span:last-child{display:none;} }
+  @media (max-width:900px){
+    body{font-size:18px;}
+    h1.title{font-size:clamp(32px,8.4vw,52px);}
+    .masthead,main,.lede,footer{padding-left:22px; padding-right:22px;}
+    h2 .num{position:static; display:block; margin-bottom:6px; font-size:.72em;}
+    .tcap{margin-top:-10px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
+  ::selection{background:var(--accent); color:var(--paper);}
+</style>
+</head>
+<body>
+
+<button class="toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <svg class="toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+
+<header class="masthead">
+  <div class="masthead__row">
+    <div class="masthead__brand">ml&#8209;debates<span>.</span></div>
+    <div class="masthead__tag">Written by AI<br>Directed by a human</div>
+  </div>
+  <div class="masthead__sub">
+    <span><a href="index.html">All debates</a> &middot; Debate 003</span>
+    <span><a href="debate-002-activations.html">&larr; Debate 002</a></span>
+  </div>
+</header>
+
+<div class="lede">
+  <div class="lede__inner">
+    <div class="kicker">Debate 003</div>
+    <h1 class="title">Can a CNN do time series?</h1>
+    <p class="deck">Yes &mdash; but not the one you are picturing. And the reason it works is not the reason you might think.</p>
+    <div class="metaline">
+      <span>Status: <b>Open</b></span>
+      <span>Draft <b>0.1</b></span>
+      <span>Opened <b>22 Oct 2026</b></span>
+      <span>Editor <b>Divyansh Tripathi</b></span>
+      <span class="stamp">Draft &middot; Not settled</span>
+    </div>
+  </div>
+</div>
+
+<main>
+<article>
+
+  <h2><span class="num">00</span>Framing: &ldquo;CNN&rdquo; is doing a lot of work</h2>
+  <p class="lead lead--drop">The question carries a hidden assumption &mdash; that &ldquo;CNN&rdquo; means the 2-D image convolution, and that if it can do time series at all, it is doing so as a compromise. Neither holds.</p>
+  <div class="framing">
+    <span class="framing__label">Three separate questions</span>
+    <ol>
+      <li><strong>Can it?</strong> Yes &mdash; but not the vision CNN. The CNN that works on sequences is a specific architecture, the <strong>temporal convolutional network (TCN)</strong>, and it only works after two particular modifications.</li>
+      <li><strong>Why does convolution suit a sequence at all?</strong> Because it encodes exactly two priors that time series often obey: <em>locality</em> and <em>translation invariance</em>.</li>
+      <li><strong>How well?</strong> Competitive-to-state-of-the-art across every mainstream task &mdash; but, as in Debate 001, the margin over Transformers and MLPs is small and protocol-sensitive.</li>
+    </ol>
+  </div>
+
+  <h2><span class="num">01</span>Can a CNN do time series? Yes &mdash; but a specific CNN</h2>
+  <p>The naive idea is to slide 1-D filters along the time axis, exactly as a vision CNN slides 2-D filters over an image. That much is true, and old &mdash; the &ldquo;time delay neural network&rdquo; did it in 1989. But a vanilla sliding convolution has a fatal property: <strong>its receptive field grows only linearly with depth.</strong> Stack <em>L</em> layers of kernel size <em>k</em> and the network sees 1 + <em>L</em>(<em>k</em>&minus;1) steps back. To look 1000 steps into the past you would need hundreds of layers.</p>
+  <p>The fix is two modifications:</p>
+  <ul class="camps">
+    <li><b>Causality.</b> An output at time <em>t</em> may be convolved only with inputs from time <em>t</em> and earlier &mdash; no information leaks from the future into the past. This is what makes the convolution <em>causal</em>, and it is essential for forecasting.</li>
+    <li><b>Dilation.</b> Spread the filter taps out by a factor <em>d</em>, so a kernel of size <em>k</em> reaches across (<em>k</em>&minus;1)<em>d</em> steps. Increase the dilation exponentially with depth (<em>d</em> = 1, 2, 4, 8, &hellip;) and the receptive field grows <em>exponentially</em>:</li>
+  </ul>
+  <div class="eq eq--lead">R = 1 + (k &minus; 1)(2<sup>L</sup> &minus; 1)</div>
+  <p>With <em>k</em>=3 and <em>L</em>=10 layers, that is a receptive field of about 2000 steps &mdash; from ten layers. Add residual connections to stabilise the depth, and you have the TCN:</p>
+  <div class="eq">TCN = 1-D FCN &nbsp;+&nbsp; causal convolutions &nbsp;+&nbsp; dilated convolutions &nbsp;+&nbsp; residual blocks</div>
+  <p>That is the whole trick. The rest of the architecture is ordinary.</p>
+
+  <h2><span class="num">02</span>Why does convolution suit a time series at all?</h2>
+  <p>Four mechanisms &mdash; and these are the actual answer to &ldquo;why&rdquo;.</p>
+  <ul class="camps">
+    <li><b>Local pattern detectors with weight sharing.</b> A convolution filter is a learned template. The <em>same</em> filter is applied at every position along the series, so a pattern &mdash; a spike, a motif, a regime &mdash; is detected wherever it appears. This is exactly the structure of time-series motifs: locally-shaped, recurring subsequences.</li>
+    <li><b>The receptive field is a design choice, not a learned accident.</b> In an RNN, &ldquo;how much history matters&rdquo; is implicit in the hidden state. In a TCN it is a hyperparameter you set with <em>k</em>, <em>d</em> and depth &mdash; so you can <em>reason</em> about what the model can and cannot see.</li>
+    <li><b>Parallelism and short gradient paths.</b> There is no sequential dependency across time, so a whole series trains in parallel. And backpropagation runs <em>along the depth</em>, not along time &mdash; so the classic RNN pathologies (vanishing and exploding gradients <em>through time</em>) largely disappear.</li>
+    <li><b>Cross-channel mixing comes for free.</b> A convolution can also run across the <em>variable</em> dimension, capturing dependencies between channels &mdash; something a per-variable RNN does not do naturally.</li>
+  </ul>
+  <p>Put together: convolution is not a capability, it is a <strong>prior</strong> &mdash; locality plus translation invariance. It wins when that prior is true of your data.</p>
+
+  <h2><span class="num">03</span>How well does it perform?</h2>
+
+  <h3>Sequence modelling in general &mdash; the origin</h3>
+  <p>Bai, Kolter &amp; Koltun (2018) made people take TCNs seriously: a single generic TCN beat canonical LSTMs and GRUs across a broad suite of tasks that had been designed to <em>benchmark recurrent networks</em> &mdash; on the recurrent nets&rsquo; home turf.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Task</th><th>LSTM</th><th>GRU</th><th>TCN</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">Sequential MNIST (accuracy)</td><td class="c">87.2</td><td class="c">96.2</td><td class="c win">99.0</td></tr>
+        <tr><td class="prop">Permuted MNIST (accuracy)</td><td class="c">85.7</td><td class="c">87.3</td><td class="c win">97.2</td></tr>
+        <tr><td class="prop">Copy memory (loss)</td><td class="c">0.0204</td><td class="c">0.0197</td><td class="c win">3.5e-5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tcap">The sharpest finding was not accuracy but <em>memory</em>: despite the RNN&rsquo;s theoretical unbounded history, the TCN exhibited substantially longer <em>effective</em> memory in practice.</p>
+
+  <h3>Forecasting</h3>
+  <ul class="camps">
+    <li><b>TimesNet</b> (ICLR 2023) attacks the 1-D representation problem directly: an FFT discovers the dominant periods, the 1-D series is reshaped into a stack of 2-D tensors (rows = periods, columns = within-period position), and <strong>2-D convolutions</strong> capture intra-period and inter-period variation at once. Consistent state of the art across five tasks.</li>
+    <li><b>ModernTCN</b> (ICLR 2024) keeps the series 1-D and <em>modernises</em> the convolution &mdash; large kernels (size 51), patchify embedding, and a decoupled block that mixes time, feature and variable dimensions separately. State of the art across five tasks, at convolution&rsquo;s efficiency. Its central claim is about the <strong>effective receptive field (ERF)</strong>: enlarging the <em>kernel</em> raises the ERF more efficiently than stacking <em>layers</em>.</li>
+    <li><b>The honest caveat.</b> A reproducibility study (<em>ModernTCN Revisited</em>, 2025) re-ran the benchmark after fixing protocol issues &mdash; notably the &ldquo;Drop Last Trick&rdquo; (silently discarding the final short batch, which inflates results) &mdash; and found ModernTCN <em>competitive but frequently behind PatchTST</em>, with a smaller ERF than continuous-kernel models at higher parameter cost. The CNN-vs-Transformer gap in forecasting is real but small, and &mdash; exactly as in Debate 001 &mdash; <mark>protocol-sensitive</mark>.</li>
+  </ul>
+
+  <h3>Classification</h3>
+  <p>This is where convolution is strongest, and the evidence is unusually clean:</p>
+  <ul class="camps">
+    <li><b>InceptionTime</b> (2020) &mdash; an ensemble of five CNN models &mdash; matched <b>HIVE-COTE</b>, a meta-ensemble of 37 classifiers, on the UCR archive, at a tiny fraction of the compute and scaling to millions of series.</li>
+    <li><b>ROCKET</b> (2020) is the decisive result. It uses <strong>random</strong> convolutional kernels &mdash; <em>no learning of the filters at all</em> &mdash; followed by a plain linear classifier, and reaches state-of-the-art accuracy at roughly 1/100th the training time (about 2 hours across all 85 UCR datasets, versus more than 6 days for InceptionTime).</li>
+  </ul>
+  <div class="pull"><p>If random convolutions plus a linear head already reach the state of the art, then what carries the signal for time-series classification is convolution&rsquo;s inductive bias itself &mdash; not the learning of the filters.</p></div>
+
+  <h3>Anomaly detection and imputation</h3>
+  <p>Both TimesNet and ModernTCN report state of the art on these; TimesNet&rsquo;s average anomaly-detection F1 (86.3) beat the Transformer baselines it was compared against.</p>
+
+  <h2><span class="num">04</span>Where CNNs fail &mdash; the honest limits</h2>
+  <ul class="camps">
+    <li><b>The receptive field is fixed.</b> A TCN can only see <em>R</em> steps back. If the dependency is longer than your dilation schedule, the model is blind to it &mdash; and cannot grow its memory to find out. Attention adapts; you must know (or guess) the horizon in advance.</li>
+    <li><b>Weight sharing assumes the pattern means the same thing everywhere.</b> This is the deep assumption, and non-stationary series violate it: regime shifts, trends, and time-varying relationships all break translation invariance. It is precisely why every convolutional forecaster bolts on instance normalisation (RevIN) &mdash; to re-centre the series so the shared filter stays valid.</li>
+    <li><b>Cross-variable structure needs explicit design.</b> A per-channel convolution ignores the other channels; mixing them takes extra machinery.</li>
+    <li><b>Exact long-range retrieval is hard.</b> Attention can fetch one specific distant point directly; a convolution must <em>propagate</em> it through many dilated layers &mdash; a lossy, approximate route.</li>
+    <li><b>The locality prior can be a liability</b> when the signal is genuinely global and the whole history matters equally.</li>
+  </ul>
+
+  <h2><span class="num">05</span>What the evidence, read together, suggests</h2>
+  <p>This is a reading, not a verdict. The editor decides what stands.</p>
+  <ol class="reading">
+    <li><strong>Yes, CNNs work on time series</strong> &mdash; but the working CNN is a TCN: causal, dilated, residual, with a receptive field you design rather than hope for.</li>
+    <li><strong>The mechanism is real and specific</strong>: local pattern detectors + translation invariance + parallel training + short gradient paths + an explicit receptive field.</li>
+    <li><strong>Performance is competitive-to-SOTA across tasks</strong>: TCNs match or beat RNNs on long sequences; TimesNet and ModernTCN rival Transformers on forecasting; InceptionTime and ROCKET are state-of-the-art class for classification.</li>
+    <li><strong>But the margin over Transformers and MLPs is small and protocol-sensitive</strong> &mdash; the same conclusion Debate 001 reached about every architecture in this space.</li>
+    <li><strong>The cleanest framing:</strong> convolution is a <em>prior</em>, not a <em>capability</em>. It wins when locality and translation invariance are true of the data &mdash; and it is quietly disabled (by normalisation) when they are not.</li>
+  </ol>
+
+  <div class="cross">
+    <span class="framing__label">Cross-debate notes</span>
+    <ul>
+      <li><strong>Debate 001 (attention vs LSTM):</strong> architecture is rarely the first-order variable; protocol and data regime dominate. The same holds here &mdash; ModernTCN&rsquo;s win evaporates under a corrected protocol.</li>
+      <li><strong>Debate 002 (activations):</strong> what makes a component <em>work</em> is the right inductive bias plus good conditioning, not merely being nonlinear. Here the component is the convolution, and its power is a <em>prior</em>, not raw expressive capacity.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">06</span>Open forks &mdash; your call</h2>
+  <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
+  <ul class="forks">
+    <li><span class="fid">F1</span><span class="q">Scope.</span> Forecasting only, or all five mainstream tasks (forecasting, classification, imputation, anomaly detection)?<span class="tr">Classification is where the evidence is cleanest; forecasting is where the debate is contested.</span></li>
+    <li><span class="fid">F2</span><span class="q">Which CNN?</span> Keep it at the TCN, or go into TimesNet (1-D &rarr; 2-D) and ModernTCN (large kernel) as the modern branch?<span class="tr">The modern branch is where CNN and Transformer have converged.</span></li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> TCN vs LSTM vs Transformer on one small forecasting set.<span class="tr">This is the third debate to reach the same fork &mdash; one experiment could serve Debates 001, 002 and 003 at once.</span></li>
+    <li><span class="fid">F4</span><span class="q">Make the receptive-field math a worked example?</span> Show, with numbers, what <em>k</em>, <em>d</em> and depth buy you.<span class="tr">Cheap, and the single most clarifying thing in this artifact.</span></li>
+    <li><span class="fid">F5</span><span class="q">Deliverable shape.</span> Same as Debates 001&ndash;002?</li>
+    <li><span class="fid">F6</span><span class="q">Verdict policy.</span> Same &mdash; does a debate ever get marked <em>settled</em>?</li>
+  </ul>
+
+  <section class="endnotes">
+    <h2>Sources</h2>
+    <ol>
+      <li>Bai, Kolter, Koltun. <em>An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling.</em> arXiv:1803.01271, 2018. (TCN.)</li>
+      <li>van den Oord et al. <em>WaveNet: A Generative Model for Raw Audio.</em> 2016. (Origin of dilated causal convolutions.)</li>
+      <li>Yu, Koltun. <em>Multi-Scale Context Aggregation by Dilated Convolutions.</em> 2016.</li>
+      <li>Wu, Hu, Liu, Zhou, Wang, Long. <em>TimesNet: Temporal 2D-Variation Modeling for General Time Series Analysis.</em> ICLR 2023. arXiv:2210.02186.</li>
+      <li>Luo, Wang. <em>ModernTCN: A Modern Pure Convolution Structure for General Time Series Analysis.</em> ICLR 2024.</li>
+      <li><em>ModernTCN Revisited: A Reproducibility Study with Extended Benchmarks</em>, 2025.</li>
+      <li>Ismail Fawaz et al. <em>InceptionTime: Finding AlexNet for Time Series Classification.</em> Data Mining and Knowledge Discovery, 2020. arXiv:1909.04939.</li>
+      <li>Dempster, Petitjean, Webb. <em>ROCKET: Exceptionally fast and accurate time series classification using random convolutional kernels.</em> DMKD, 2020. arXiv:1910.13051.</li>
+      <li>Hewamalage, Bergmeir, Bandara. <em>An Experimental Review on Deep Learning Architectures for Time Series Forecasting</em>, 2021. arXiv:2103.12057.</li>
+    </ol>
+  </section>
+
+</article>
+</main>
+
+<footer>
+  <span>ml&#8209;debates &middot; Issue 003 &middot; Draft 0.1</span>
+  <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/ml-debates">source on GitHub</a></span>
+</footer>
+
+<script>
+  function toggleTheme(){
+    var el=document.documentElement;
+    el.setAttribute('data-theme', el.getAttribute('data-theme')==='dark'?'light':'dark');
+  }
+</script>
+</body>
+</html>

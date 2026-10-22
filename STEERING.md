@@ -19,8 +19,18 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-22 | Debate 001 bumped to draft 0.2: added the xLSTM case. | Axis widened to four-way (added "modern recurrence"). New fork F7 added. |
 | 2026-10-22 | Debate 002 opened (draft 0.1). | "Why not x² / is nonlinearity all we need / why tanh vs trig." Six open forks. |
 | 2026-10-22 | Site restructured: `docs/index.html` is now an index page; each debate has its own page. | Debate 001 moved to `docs/debate-001-attention-vs-lstm.html`. |
+| 2026-10-22 | Debate 003 opened (draft 0.1): can a CNN do time series? | TCN / dilated causal convs / receptive field; ModernTCN + TimesNet; ROCKET + InceptionTime. Six open forks. |
 
 ## Open decisions (awaiting the editor)
+
+From Debate 003, Section 06:
+
+- [ ] **D3-F1** — Scope: forecasting only, or all five tasks?
+- [ ] **D3-F2** — Which CNN: TCN only, or the modern branch (TimesNet / ModernTCN)?
+- [ ] **D3-F3** — Run the experiment (TCN vs LSTM vs Transformer)?
+- [ ] **D3-F4** — Make the receptive-field math a worked example?
+- [ ] **D3-F5** — Deliverable shape: same as before?
+- [ ] **D3-F6** — Verdict policy: same as before?
 
 From Debate 002, Section 05:
 
