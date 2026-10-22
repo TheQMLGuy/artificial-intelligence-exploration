@@ -16,14 +16,16 @@ Anything not yet decided stays **open** until the editor rules on it.
 |------|----------|-------|
 | 2026-10-22 | Project created as `ml-debates`; written-artifact style, not code. | First debate: attention-augmented RNNs vs. LSTMs for time series. |
 | 2026-10-22 | Debate 001 opened (draft 0.1). | Framing corrected: LSTM is itself an RNN, so the axis is three-way. |
+| 2026-10-22 | Debate 001 bumped to draft 0.2: added the xLSTM case. | Axis widened to four-way (added "modern recurrence"). New fork F7 added. |
 
 ## Open decisions (awaiting the editor)
 
 From Debate 001, Section 5:
 
-- [ ] **F1** — Scope of the axis: three-way vs. "attention-on-LSTM, worth it?"
+- [ ] **F1** — Scope of the axis: four-way vs. "attention-on-LSTM, worth it?"
 - [ ] **F2** — Task scope: forecasting only, or also classification / anomaly detection?
 - [ ] **F3** — Evidence standard: benchmark papers only, or include protocol critiques?
 - [ ] **F4** — Run an experiment, or keep it reading-based?
 - [ ] **F5** — Deliverable shape: single essay vs. living evidence table?
 - [ ] **F6** — Verdict policy: does a debate ever get marked *settled*, and by what standard?
+- [ ] **F7** — Weight of xLSTM: is recurrence *back* (a real fourth camp), or a well-researched special case with narrow wins?

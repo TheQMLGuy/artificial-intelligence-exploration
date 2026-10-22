@@ -1,7 +1,8 @@
 # Debate 001 — Attention-Augmented RNNs vs. LSTMs for Time-Series Forecasting
 
-**Status:** open — draft 0.1
+**Status:** open — draft 0.2
 **Opened:** 2026-10-22
+**Last edited:** 2026-10-22
 **Editor:** Divyansh Tripathi
 **Written by:** AI assistant
 **Framing as requested:** "RNN with attention vs LSTM for time series data"
@@ -14,7 +15,7 @@ The question as posed hides a category error, and fixing it changes what we are
 actually arguing about.
 
 **An LSTM is an RNN.** So "RNN with attention vs LSTM" cannot be
-recurrence-versus-recurrence. Once untangled, there are three distinct
+recurrence-versus-recurrence. Once untangled, there are four distinct
 architectures on the table:
 
 1. **Plain gated recurrence** — LSTM (or GRU). A sequence model with a memory
@@ -24,11 +25,17 @@ architectures on the table:
    stack).
 3. **Attention without recurrence** — the Transformer, where attention replaces
    the recurrent state entirely.
+4. **Modern recurrence** — xLSTM and the linear-RNN family (Mamba, RWKV, and
+   kin). Recurrence that keeps linear cost but adopts attention's associative
+   memory — a matrix memory doing key-to-value retrieval — together with modern
+   gating.
 
 So the honest question is: *does attention help a recurrent model on time series,
-and at what point does it justify dropping recurrence altogether?* I keep the
-original phrasing in the title for continuity, but the argument below runs along
-the three-way axis. *(Editor: say the word if you want the framing kept literal
+does it justify dropping recurrence altogether, or does the right move lie in
+rebuilding recurrence with what attention taught us?* That last option is
+xLSTM's bet, and it is the newest entrant to this debate. I keep the original
+phrasing in the title for continuity, but the argument below runs along the
+four-way axis. *(Editor: say the word if you want the framing kept literal
 instead.)*
 
 ---
@@ -95,7 +102,111 @@ modest win — in the right regime.
 
 ---
 
-## 3. The skeptical middle: is any of this real?
+## 3. The case for xLSTM
+
+**What it is.** xLSTM — *Extended Long Short-Term Memory* (Beck, Pöppel, Spanring,
+Auer, Prudnikova, Kopp, Klambauer, Brandstetter, Hochreiter; NeurIPS 2024) — is
+the most serious attempt yet to answer "recurrence lost to attention" by
+rebuilding the recurrent architecture rather than conceding to attention. It
+keeps the LSTM memory cell and adds two changes:
+
+- **Exponential gating**, with normalization and stabilization, so the model can
+  *revise* a stored value when a better match arrives — something a
+  sigmoid-gated LSTM struggles to do.
+- **New memory structures.** *sLSTM* keeps a scalar memory with memory mixing and
+  adds heads; *mLSTM* replaces the scalar cell with a **matrix memory** updated
+  by a covariance (outer-product) rule — in effect the same key/value associative
+  retrieval that attention performs, but carried out recurrently.
+
+Stacked into residual blocks, this is a modern recurrent model: linear compute
+and constant memory in sequence length, and no growing KV cache.
+
+**The case, in its proponents' terms.**
+
+1. **It fixes the three things that drove people off LSTMs.** The paper is
+   explicit that LSTM had three limitations — inability to revise storage
+   decisions, limited (scalar) storage capacity, and non-parallelizability due to
+   memory mixing — and that each is addressed: exponential gating for the first,
+   matrix memory for the second, mLSTM's parallel training mode for the third.
+   Ablations attribute the gain to both exponential gating and matrix memory.
+
+2. **It beats Transformers and SSMs on language modeling — in the paper's
+   controlled setting.** Trained on 15B tokens of SlimPajama at ~400M
+   parameters, xLSTM[1:0] and xLSTM[7:1] achieved the best validation perplexity
+   of the compared models (13.43 / 13.48, versus Llama 14.25 and Mamba 13.70). On
+   the PALOMA suite, xLSTM[1:0] had lower perplexity than Mamba in 568 of 571
+   domains and lower than Llama in 486 of 571. The scaling curves suggest the
+   advantage persists with size.
+
+3. **A theoretical, not just empirical, claim.** Because sLSTM keeps memory
+   mixing, it can solve state-tracking tasks (e.g. parity) that Transformers and
+   state-space models are argued to be fundamentally unable to solve. That is a
+   stronger claim than "we won a benchmark" — it is "we are in a more expressive
+   class."
+
+4. **Efficiency is the headline, and it is real.** xLSTM 7B (7B parameters, 2.3T
+   tokens) is reported as the fastest and most memory-efficient model of its
+   7B-scale comparisons: roughly 50% faster generation than Mamba, faster than
+   Llama under a similar block design, the highest prefill throughput, and a
+   constant memory footprint against the Transformer's growing KV cache. It held
+   20% average accuracy at 131k context despite training to only 32k.
+
+5. **On time series specifically — our actual debate — it is the strongest
+   recurrent result yet.**
+   - **xLSTMTime** (2024) adapts xLSTM with series decomposition and reversible
+     instance normalization. It beats DLinear consistently (e.g. ~18% better MSE
+     on Weather at T=96) and is competitive with, and in places modestly better
+     than, PatchTST — strongest at long horizons.
+   - **xLSTM-Mixer** (NeurIPS 2025) combines a shared linear forecast with xLSTM
+     blocks and time/variate/view mixing. It reports new state-of-the-art on 6 of
+     7 standard datasets; in significance testing it is better than every other
+     method except xLSTMTime; on the GIFT-Eval benchmark it is the top
+     purely-supervised model (rank 2 by CRPS). It does this with one to two
+     orders of magnitude less memory than a strong mixer baseline.
+   - Crucially, the xLSTM-Mixer ablation swaps sLSTM for a plain LSTM or GRU and
+     performance *drops* — evidence that the xLSTM cell, not just the surrounding
+     scaffold, is doing the work.
+
+**Why this matters for the debate.** xLSTM is the strongest evidence so far that
+"recurrence lost" is the wrong summary. It takes attention's central trick —
+associative, key/value memory — and puts it back inside a recurrent model that
+keeps linear cost, then beats the linear models (DLinear) and edges the strong
+Transformers (PatchTST) on exactly the benchmarks this debate turns on.
+
+**The counter-case, kept honest.**
+
+- The original language-modeling comparison drew sharp criticism: the paper
+  trained all models with the *same* learning rate for comparability, which
+  critics argue contradicts peer-reviewed results for RNNs (e.g. HGRN) and
+  amounts to using tuned hyperparameters for one model and not the others.
+  Comparisons were by parameter count rather than compute time, even though
+  sLSTM is not fully parallelizable. An independent technical report,
+  *Competitiveness of xLSTM Variants across Formal Language Tasks*, re-runs seven
+  parameter-matched architectures with the learning rate tuned per (model, task)
+  pair — a direct attempt to test the fairness of the original claim.
+- Even the authors' own follow-up is measured: xLSTM 7B lands *mid-range* on the
+  Open LLM Leaderboard v2, behind Llama-3.1-8B, Qwen2.5-7B, and Gemma-2-9B. Its
+  win is speed and efficiency, not accuracy — and the authors say matching the
+  best 7B models would need more and better data.
+- Training at 7B was unstable and needed targeted fixes (RMSNorm, soft-capping
+  the gates, negative input-gate initialization).
+- The time-series gains are real but often small and dataset-specific:
+  xLSTMTime underperforms PatchTST on some settings (e.g. ILI at T=24);
+  xLSTM-Mixer is weaker on Traffic and ETTh2 (outlier handling). The xLSTM-Mixer
+  edge over strong baselines is frequently 1–3%, and part of its result comes
+  from the mixer / linear-forecast scaffolding and normalization rather than the
+  cell alone.
+- The authors' own limitations: a fixed-size memory may overload at very long
+  contexts; kernels were unoptimized; the architecture and hyperparameters were
+  not fully tuned.
+
+Net: xLSTM is the most credible "recurrence, rebuilt" argument on the table — but
+as with everything else in this debate, the size of its win depends heavily on
+the protocol and on which benchmark you read.
+
+---
+
+## 4. The skeptical middle: is any of this real?
 
 This is where the debate gets interesting, because a well-known paper argues the
 whole attention-vs-recurrence fight is being measured on a flawed benchmark.
@@ -123,11 +234,13 @@ variants — can lose to a naive Persistence baseline in many cases.
 **Takeaway.** A large share of the reported gap between architectures is
 entangled with *evaluation protocol* — direct vs. iterative forecasting,
 univariate vs. multivariate, covariate availability, normalization, and
-look-back window — rather than with the sequence model itself.
+look-back window — rather than with the sequence model itself. The xLSTM
+results above are subject to the same caution: their benchmarks are the same
+contested benchmarks.
 
 ---
 
-## 4. What the evidence, read together, suggests
+## 5. What the evidence, read together, suggests
 
 This is a reading, not a verdict. The editor decides what stands.
 
@@ -143,29 +256,38 @@ This is a reading, not a verdict. The editor decides what stands.
    and its benefit does not always transfer from synthetic to real data — e.g. a
    blood-glucose prediction study found an attention module helped on synthetic
    data but not on real patient data.
-4. **"Attention beats recurrence" is not established for time series** the way it
+4. **Modern recurrence (xLSTM) is the strongest current answer to "recurrence is
+   dead."** It absorbs attention's associative memory while keeping linear cost,
+   and it currently leads the standard time-series benchmarks among recurrent
+   models — beating the linear models and edging the strong Transformers. But its
+   margins are often small, its most-cited language-modeling result is contested
+   on protocol, and its wins are dataset-specific. It is evidence that the axis is
+   *not settled*, not that recurrence has won.
+5. **"Attention beats recurrence" is not established for time series** the way it
    is for language. The strongest honest statement is *context-dependent*.
 
 ---
 
-## 5. Open forks — your call
+## 6. Open forks — your call
 
-**F1. Scope of the axis.** Keep all three architectures (recurrence, recurrence+attention,
-attention-only)? Or narrow to just "attention added to LSTM — worth it or not"?
-*Trade-off: three-way is more honest but sprawling; two-way is sharper but loses
-the Transformer fight, which is where the noise is.*
+**F1. Scope of the axis.** Keep all four architectures (recurrence,
+recurrence+attention, attention-only, modern recurrence)? Or narrow to just
+"attention added to LSTM — worth it or not"?
+*Trade-off: four-way is more honest but sprawling; two-way is sharper but loses
+both the Transformer fight and the xLSTM fight, which is where the noise is.*
 
 **F2. Task scope.** Forecasting only, or also classification / anomaly detection /
 imputation? *Attention tends to look better once you leave pure forecasting.*
 
 **F3. Evidence standard.** Benchmark papers only? Or include practitioner reports
 and the benchmark-protocol critiques? *The DLinear rebuttal only exists at the
-"protocol critique" level.*
+"protocol critique" level, and the xLSTM language-modeling critique lives there
+too.*
 
 **F4. Do we run an experiment?** Keep this a reading-based essay, or add a small
 reproducible benchmark (one or two datasets, LSTM vs LSTM+attention vs
-Transformer, controlled protocol)? *An experiment would settle the protocol
-question for our own use but is real work.*
+Transformer vs xLSTM, controlled protocol)? *An experiment would settle the
+protocol question for our own use but is real work.*
 
 **F5. Deliverable shape.** One long essay, or a running "state of the argument"
 with a living evidence table (claim | source | regime | verdict)?
@@ -174,10 +296,27 @@ with a living evidence table (claim | source | regime | verdict)?
 standard — a majority of benchmark papers, a decisive experiment, or your
 judgment call?
 
+**F7. Weight of xLSTM.** Is xLSTM evidence that recurrence is *back* — a genuine
+fourth camp that changes the verdict — or a well-researched special case whose
+wins are real but narrow? *This is arguably the live question of the whole debate
+right now.*
+
 ---
 
 ## Sources (plain text)
 
+- Beck, Pöppel, Spanring, Auer, Prudnikova, Kopp, Klambauer, Brandstetter,
+  Hochreiter. *xLSTM: Extended Long Short-Term Memory.* NeurIPS 2024.
+  arXiv:2405.04517.
+- Beck et al. *xLSTM 7B: A Recurrent LLM for Fast and Efficient Inference.*
+  ICML 2025. arXiv:2503.13427.
+- Alharthi, Mahmood. *xLSTMTime: Long-Term Time Series Forecasting with xLSTM.*
+  AI (MDPI), 2024. arXiv:2407.10240.
+- Kraus et al. *xLSTM-Mixer: Multivariate Time Series Forecasting by Mixing via
+  Scalar Memories.* NeurIPS 2025. arXiv:2410.16928.
+- Ludwig. *Competitiveness of xLSTM Variants across Formal Language Tasks*
+  (independent technical report + code), 2026.
+- Hacker News discussion of the xLSTM paper (benchmarking critique), 2024.
 - Zeng, Chen, Zhang, Xu. *Are Transformers Effective for Time Series Forecasting?*
   AAAI 2023. arXiv:2205.13504. (DLinear / LTSF-Linear.)
 - Hugging Face blog. *Yes, Transformers are Effective for Time Series Forecasting
