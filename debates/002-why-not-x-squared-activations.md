@@ -1,13 +1,11 @@
 # Debate 002 — Why not x²? Is nonlinearity all we need, and why tanh?
 
-**Status:** open — draft 0.1
+**Status:** open — draft 0.2
 **Opened:** 2026-10-22
 **Editor:** Divyansh Tripathi
 **Written by:** AI assistant
-**Framing as asked:** "Why don't we use y = x² as an activation function? Even
-though it's a nonlinear function — is nonlinearity everything we need to make a
-function an activation function, or are we missing something? And why only tanh?
-Why not other trigonometric ones?"
+**Framing as asked:** "Why don't we use y = x² as an activation function? Even though it's a nonlinear function — is nonlinearity everything we need to make a function an activation function, or are we missing something? And why only tanh? Why not other trigonometric ones?"
+**Follow-up:** "...and why not e^x, since it's also nonlinear and non-polynomial?"
 
 ---
 
@@ -26,8 +24,8 @@ them is most of the work:
    trigonometric activations are a real, published tool — just a *specialised* one.
 
 So the debate is really: **what does an activation function actually have to do,
-and why do x² and most trigonometric functions fail that test while tanh passes
-it?**
+and why do x², e^x, and most trigonometric functions fail that test while tanh
+passes it?**
 
 ---
 
@@ -106,6 +104,54 @@ objective is different:
 So the accurate statement is: **x² is not illegal, it is a poor general-purpose
 prior.** It needs special handling and buys you less expressivity per layer.
 
+### The mirror case: why not e^x?
+
+The follow-up question is sharper than it looks, because **e^x passes the very
+test that x² fails.** It is nonlinear, and it is emphatically *non-polynomial* — so
+the 1993 theorem's condition is satisfied, and an e^x network is, in principle, a
+universal approximator. On **expressivity, e^x is fine.**
+
+It also has several properties x² lacks: it is monotonic, injective, smooth, and
+convex. So if "nonlinear", or "non-polynomial", or "monotonic" were the whole
+story, e^x would be a perfectly good activation.
+
+It fails on the *other* axis — **conditioning** — and it fails harder than x² does:
+
+- **It is unbounded above.** e^x → ∞. Compose layers and you get an *exponential
+  tower*: e^(W₂·e^(W₁·x)). Each layer exponentiates the last, so values overflow to
+  `inf` after a handful of layers. This is the exploding-activation problem taken to
+  its extreme.
+- **The gradient *is* the activation.** d/dx e^x = e^x. So wherever the activation
+  is large, the gradient is equally large — exploding gradients, by construction.
+- **It vanishes on the other side.** As x → −∞, e^x → 0 and its gradient → 0. So e^x
+  has a *vanishing* gradient for negative inputs and an *exploding* one for positive
+  inputs — both classic pathologies in a single function.
+- **It is not zero-centred.** Its range is (0, ∞): never negative. Same all-positive
+  gradient problem as the logistic sigmoid — and indeed the sigmoid *is* 1/(1+e^−x),
+  so e^x is the sigmoid's raw ingredient.
+- **A curiosity: the bias does nothing.** Because e^(w·x + b) = e^b · e^(w·x), the
+  threshold term is absorbed into a positive scaling. The bias that the 1993 theorem
+  needs for functions like sin is redundant here — a hint that e^x's function class
+  is more rigid than it first appears.
+
+**So what did the field do?** It did not throw the exponential away — it *tamed*
+it. Almost every bounded activation is e^x in a wrapper: sigmoid is 1/(1+e^−x),
+tanh is (e^x − e^−x)/(e^x + e^−x), softplus is log(1+e^x), softmax *normalises* it,
+and attention uses a normalised exponential as its kernel. The most direct answer is
+**ELU** (Clevert, Unterthiner & Hochreiter, 2015): keep the exponential only on the
+*negative* side, where it saturates gracefully, and use the identity on the positive
+side, where the exponential would explode:
+
+    ELU(x) = x            if x > 0
+             α(e^x − 1)   if x ≤ 0
+
+ELU is, quite literally, "e^x with the dangerous half removed."
+
+The pair makes this artifact's point sharper than either alone: **x² fails
+expressivity; e^x passes expressivity and fails conditioning.** Neither nonlinearity
+nor non-polynomiality is the currency on its own — conditioning under composition is
+co-equal.
+
 ---
 
 ## 2. So what does an activation function actually have to do?
@@ -113,22 +159,23 @@ prior.** It needs special handling and buys you less expressivity per layer.
 Nonlinearity is necessary and insufficient. The properties that actually matter,
 and how the usual suspects score:
 
-| Property | Why it matters | x² | tanh | ReLU | sin |
-|---|---|---|---|---|---|
-| Nonlinear | breaks linear collapse; **necessary** | yes | yes | yes | yes |
-| Non-polynomial | universal-approximation guarantee | **no** | yes | yes | yes |
-| Monotonic | *helps* optimisation; **not required** | no | yes | yes | no |
-| Zero-centred output | avoids zig-zag gradient updates | no | yes | no | yes |
-| Bounded / controlled growth | numerical stability under depth | no | yes | linear | yes |
-| Well-behaved gradient | no exploding / vanishing | **no** | saturates | 0 or 1 | oscillates |
-| Cheap to compute | speed at scale | cheap | exp | cheapest | exp |
-| Right inductive bias | matches the task | — | general | general | periodic |
+| Property | Why it matters | x² | e^x | tanh | ReLU | sin |
+|---|---|---|---|---|---|---|
+| Nonlinear | breaks linear collapse; **necessary** | yes | yes | yes | yes | yes |
+| Non-polynomial | universal-approximation guarantee | **no** | yes | yes | yes | yes |
+| Monotonic | *helps* optimisation; **not required** | no | yes | yes | yes | no |
+| Zero-centred output | avoids zig-zag gradient updates | no | **no** | yes | no | yes |
+| Bounded / controlled growth | numerical stability under depth | no | **no** | yes | linear | yes |
+| Well-behaved gradient | no exploding / vanishing | **no** | **explodes** | saturates | 0 or 1 | oscillates |
+| Cheap to compute | speed at scale | cheap | exp | exp | cheapest | exp |
+| Right inductive bias | matches the task | — | — | general | general | periodic |
 
 Three corrections to the "nonlinearity is everything" theory fall straight out of
 this table:
 
-1. **Non-polynomiality is the actual requirement** for the classical guarantee —
-   and it is the exact thing x² lacks.
+1. **Non-polynomiality is necessary but not sufficient.** It is the actual
+   requirement for the classical guarantee — and it is the exact thing x² lacks.
+   But e^x *has* it, and is still unusable (see section 1).
 2. **Monotonicity is not required.** This is the part most people get wrong.
    GELU, Swish and Mish are all *non-monotonic* (they dip slightly negative near
    zero) and they are state of the art. Recent theory even establishes
@@ -212,11 +259,16 @@ search for "any nonlinear function."
 2. **x² fails on the sharpest test and the practical ones.** It is the exact class
    the universal approximation theorem excludes; it is lossy (sign-destroying),
    unbounded, and ill-conditioned.
-3. **Monotonicity is a convenience, not a requirement.** The strongest modern
+3. **e^x shows non-polynomiality alone is not enough either.** It passes the theorem
+   and is still unusable: unbounded, non-zero-centred, and with a gradient equal to
+   its own value — exploding on one side, vanishing on the other. The field's
+   response was to *tame* it (sigmoid, tanh, softplus, softmax, ELU), not to
+   discard it.
+4. **Monotonicity is a convenience, not a requirement.** The strongest modern
    activations are non-monotonic.
-4. **tanh is a good general squash, not the only one.** It won for zero-centredness
+5. **tanh is a good general squash, not the only one.** It won for zero-centredness
    and a healthy gradient near zero, and it lost the deep-net default to ReLU.
-5. **Trigonometric activations are a live tool, not a forbidden zone** — sin wins
+6. **Trigonometric activations are a live tool, not a forbidden zone** — sin wins
    where the signal is periodic (SIREN), and the bias term is what makes any of it
    work.
 
@@ -224,9 +276,9 @@ search for "any nonlinear function."
 
 ## 5. Open forks — your call
 
-**F1. Scope.** Keep this to "why not x²" plus "what makes an activation," or open
-it into the full zoo (ReLU family, GELU, Swish, Mish, parametric and learned
-activations)? *The zoo is where "why choose at all?" gets answered.*
+**F1. Scope.** Keep this to "why not x² / e^x" plus "what makes an activation," or
+open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish, parametric and
+learned activations)? *The zoo is where "why choose at all?" gets answered.*
 
 **F2. Mathematical depth.** Keep the one-line quadratic-form proof, or develop the
 Leshno theorem and the L²-density argument properly? *Deeper is more satisfying
@@ -268,6 +320,8 @@ table), or different?
 - Wu et al. *Learning a Single Neuron for Non-monotonic Activation Functions.*
   AISTATS 2022.
 - LeCun, Bottou, Orr, Müller. *Efficient BackProp.* 1998.
+- Clevert, Unterthiner, Hochreiter. *Fast and Accurate Deep Network Learning by
+  Exponential Linear Units (ELUs).* ICLR 2016. arXiv:1511.07289.
 - Chrysos, Moschoglou, Bouritsas, Deng, Panagakis. *Deep Polynomial Neural
   Networks.* IEEE TPAMI, 2022.
 - Dubey, Singh, Chaudhuri. *Activation Functions in Deep Learning: A Comprehensive

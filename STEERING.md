@@ -20,6 +20,7 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-22 | Debate 002 opened (draft 0.1). | "Why not x² / is nonlinearity all we need / why tanh vs trig." Six open forks. |
 | 2026-10-22 | Site restructured: `docs/index.html` is now an index page; each debate has its own page. | Debate 001 moved to `docs/debate-001-attention-vs-lstm.html`. |
 | 2026-10-22 | Debate 003 opened (draft 0.1): can a CNN do time series? | TCN / dilated causal convs / receptive field; ModernTCN + TimesNet; ROCKET + InceptionTime. Six open forks. |
+| 2026-10-22 | Debate 002 bumped to draft 0.2: added the e^x case. | e^x passes the non-polynomial test and still fails on conditioning; ELU as the tamed exponential. |
 
 ## Open decisions (awaiting the editor)
 

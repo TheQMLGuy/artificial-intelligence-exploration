@@ -35,7 +35,7 @@ the editor says so; every artifact carries a status line and a draft number.
 | # | Debate | Status |
 |---|--------|--------|
 | 001 | Attention-augmented RNNs vs. LSTMs for time series | open — draft 0.2 |
-| 002 | Why not x²? Is nonlinearity all we need, and why tanh? | open — draft 0.1 |
+| 002 | Why not x² — or e^x? Is nonlinearity all we need, and why tanh? | open — draft 0.2 |
 | 003 | Can a CNN do time series? Why, and how well? | open — draft 0.1 |
 
 ## Files
