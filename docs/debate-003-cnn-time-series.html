@@ -145,6 +145,9 @@
   }
   @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
   ::selection{background:var(--accent); color:var(--paper);}
+  .wow{border:1px solid var(--rule-strong); border-left:3px solid var(--accent); background:var(--paper-2); padding:15px 20px 13px; margin:30px 0 34px; font-size:.97em; line-height:1.62;}
+  .wow__label{display:block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  .wow p{margin:0;}
 </style>
 </head>
 <body>
@@ -206,7 +209,9 @@
   <div class="eq">TCN = 1-D FCN &nbsp;+&nbsp; causal convolutions &nbsp;+&nbsp; dilated convolutions &nbsp;+&nbsp; residual blocks</div>
   <p>That is the whole trick. The rest of the architecture is ordinary.</p>
 
-  <h2><span class="num">02</span>Why does convolution suit a time series at all?</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>Dilated convolution is also called <em>atrous</em> convolution — from the French <em>à trous</em>, “with holes”. The filter is a filter with gaps punched in it. The name explains the mechanism better than most textbooks do.</p></div>
+
+<h2><span class="num">02</span>Why does convolution suit a time series at all?</h2>
   <p>Four mechanisms &mdash; and these are the actual answer to &ldquo;why&rdquo;.</p>
   <ul class="camps">
     <li><b>Local pattern detectors with weight sharing.</b> A convolution filter is a learned template. The <em>same</em> filter is applied at every position along the series, so a pattern &mdash; a spike, a motif, a regime &mdash; is detected wherever it appears. This is exactly the structure of time-series motifs: locally-shaped, recurring subsequences.</li>
@@ -216,7 +221,9 @@
   </ul>
   <p>Put together: convolution is not a capability, it is a <strong>prior</strong> &mdash; locality plus translation invariance. It wins when that prior is true of your data.</p>
 
-  <h2><span class="num">03</span>How well does it perform?</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>The first convolutional network for <em>sequences</em> is from 1989 — Waibel's Time-Delay Neural Network, applied to speech. TCNs arrived thirty years later and are, structurally, its descendants. Sequence convolution is not new; it was simply out of fashion.</p></div>
+
+<h2><span class="num">03</span>How well does it perform?</h2>
 
   <h3>Sequence modelling in general &mdash; the origin</h3>
   <p>Bai, Kolter &amp; Koltun (2018) made people take TCNs seriously: a single generic TCN beat canonical LSTMs and GRUs across a broad suite of tasks that had been designed to <em>benchmark recurrent networks</em> &mdash; on the recurrent nets&rsquo; home turf.</p>
@@ -250,7 +257,9 @@
   <h3>Anomaly detection and imputation</h3>
   <p>Both TimesNet and ModernTCN report state of the art on these; TimesNet&rsquo;s average anomaly-detection F1 (86.3) beat the Transformer baselines it was compared against.</p>
 
-  <h2><span class="num">04</span>Where CNNs fail &mdash; the honest limits</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>ROCKET never learns its filters. It uses <em>random</em> convolutional kernels followed by a plain linear classifier — and it reached state-of-the-art accuracy on the UCR archive at roughly a hundredth of the training cost. For time-series classification, the convolution is doing the work, not the learning.</p></div>
+
+<h2><span class="num">04</span>Where CNNs fail &mdash; the honest limits</h2>
   <ul class="camps">
     <li><b>The receptive field is fixed.</b> A TCN can only see <em>R</em> steps back. If the dependency is longer than your dilation schedule, the model is blind to it &mdash; and cannot grow its memory to find out. Attention adapts; you must know (or guess) the horizon in advance.</li>
     <li><b>Weight sharing assumes the pattern means the same thing everywhere.</b> This is the deep assumption, and non-stationary series violate it: regime shifts, trends, and time-varying relationships all break translation invariance. It is precisely why every convolutional forecaster bolts on instance normalisation (RevIN) &mdash; to re-centre the series so the shared filter stays valid.</li>
@@ -259,7 +268,9 @@
     <li><b>The locality prior can be a liability</b> when the signal is genuinely global and the whole history matters equally.</li>
   </ul>
 
-  <h2><span class="num">05</span>What the evidence, read together, suggests</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>WaveNet — the origin of dilated causal convolutions — was built to generate raw audio for Google's Assistant. The original model was far too slow to run in real time; the architecture that made it fast enough is the same one now used to forecast weather and electricity demand.</p></div>
+
+<h2><span class="num">05</span>What the evidence, read together, suggests</h2>
   <p>This is a reading, not a verdict. The editor decides what stands.</p>
   <ol class="reading">
     <li><strong>Yes, CNNs work on time series</strong> &mdash; but the working CNN is a TCN: causal, dilated, residual, with a receptive field you design rather than hope for.</li>
@@ -277,7 +288,9 @@
     </ul>
   </div>
 
-  <h2><span class="num">06</span>Open forks &mdash; your call</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>TimesNet turns a forecasting problem into an image problem. It finds the dominant periods with an FFT, folds the 1-D series into a 2-D grid, and then applies ordinary 2-D image convolutions. A time series becomes a picture of itself.</p></div>
+
+<h2><span class="num">06</span>Open forks &mdash; your call</h2>
   <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
   <ul class="forks">
     <li><span class="fid">F1</span><span class="q">Scope.</span> Forecasting only, or all five mainstream tasks (forecasting, classification, imputation, anomaly detection)?<span class="tr">Classification is where the evidence is cleanest; forecasting is where the debate is contested.</span></li>

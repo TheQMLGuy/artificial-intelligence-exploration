@@ -570,6 +570,9 @@
     *{animation:none!important;transition:none!important;}
   }
   ::selection{background:var(--accent);color:var(--paper);}
+  .wow{border:1px solid var(--rule-strong); border-left:3px solid var(--accent); background:var(--paper-2); padding:15px 20px 13px; margin:30px 0 34px; font-size:.97em; line-height:1.62;}
+  .wow__label{display:block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  .wow p{margin:0;}
 </style>
 </head>
 <body>
@@ -630,13 +633,17 @@
   <p><strong>It is empirically strong where data is noisy, non&#8209;stationary, or periodic.</strong> The evidence here is unusually consistent: an experimental review that trained over 38,000 models across 50,000&#8209;plus series found LSTM and CNN the best alternatives, with LSTM the most accurate; a controlled synthetic benchmark found LSTM best under varying noise, frequency, and sequence length &mdash; best in 38 of 40 configurations; and a price&#8209;prediction study found the canonical LSTM the most stable and robust, ahead of Informer, Reformer, and the vanilla Transformer.</p>
   <p><strong>Efficiency.</strong> Recurrence is O(1) memory per step and cheap for short windows. Attention is quadratic in sequence length, so the cost advantage flips toward recurrence as windows shorten.</p>
 
-  <h2><span class="num">02</span>The case for attention</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>The LSTM you use is not the LSTM that won. Hochreiter &amp; Schmidhuber's 1997 paper — the one everyone cites — had only an input gate and an output gate. The <em>forget gate</em> arrived three years later, in 2000, in a paper whose title says it outright: <em>Learning to Forget</em>. The single most-used gate in the architecture was a sequel.</p></div>
+
+<h2><span class="num">02</span>The case for attention</h2>
   <p><strong>Long&#8209;range dependencies and unknown delay.</strong> If the value that predicts time <em>t</em> is buried an arbitrary distance back, attention can look directly at it; a recurrent state must carry it through every intermediate step. The same synthetic benchmark found Transformers best at generalizing to <em>unseen delay lengths</em> &mdash; the one axis where they clearly led.</p>
   <p><strong>Versatility.</strong> A 2022 comparison of eight architectures across five benchmark datasets found the Transformer consistently produced the lowest error and was the most versatile model &mdash; though the differences among the top performers were often <em>not</em> statistically significant.</p>
   <p><strong>Attention can beat a standalone LSTM.</strong> A 2018 study on financial series found LSTM&#8209;plus&#8209;attention outperformed a plain LSTM on four of five stocks &mdash; but with higher variance and real hyperparameter sensitivity.</p>
   <p><strong>The sweet spot is the middle.</strong> A 2025 study of LSTM encoder&#8209;decoders with attention found them competitive with, or better than, Transformer baselines in <em>short&#8209;window</em> forecasting, and noted that the choice of attention scoring function critically affects accuracy. Attention added to recurrence is a real, modest win &mdash; in the right regime.</p>
 
-  <h2><span class="num">03</span>The case for xLSTM</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>Sepp Hochreiter is the “H” in LSTM. In 2024 — twenty-seven years after the original paper — he returned to modernise his own architecture, publishing xLSTM. It is rare in any field for an author to come back a quarter-century later to fix their own creation.</p></div>
+
+<h2><span class="num">03</span>The case for xLSTM</h2>
   <p><strong>What it is.</strong> xLSTM &mdash; <em>Extended Long Short-Term Memory</em> (Beck, P&ouml;ppel, Spanring, Auer, Prudnikova, Kopp, Klambauer, Brandstetter, Hochreiter; NeurIPS 2024) &mdash; is the most serious attempt yet to answer &ldquo;recurrence lost to attention&rdquo; by rebuilding the recurrent architecture rather than conceding to attention. It keeps the LSTM memory cell and adds two changes.</p>
   <p><strong>Exponential gating</strong>, with normalization and stabilization, so the model can <em>revise</em> a stored value when a better match arrives &mdash; something a sigmoid&#8209;gated LSTM struggles to do. And <strong>new memory structures</strong>: sLSTM keeps a scalar memory with memory mixing and adds heads; mLSTM replaces the scalar cell with a <strong>matrix memory</strong> updated by a covariance (outer&#8209;product) rule &mdash; in effect the same key/value associative retrieval that attention performs, but carried out recurrently. Stacked into residual blocks, this is a modern recurrent model: linear compute and constant memory in sequence length, and no growing KV cache.</p>
 
@@ -658,7 +665,9 @@
     <li>The time&#8209;series gains are real but often small and dataset&#8209;specific &mdash; xLSTMTime underperforms PatchTST on some settings; xLSTM&#8209;Mixer is weaker on Traffic and ETTh2. Part of the win comes from the mixer scaffolding and normalization, not the cell alone.</li>
   </ul>
 
-  <h2><span class="num">04</span>The skeptical middle: is any of this real?</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>The same group did both halves of this debate. Informer, Autoformer and DLinear all come out of the same institution (Tsinghua). The people who built the Transformer forecasters also wrote the paper arguing those forecasters do not work. That is not a contradiction — it is a lab correcting its own benchmark.</p></div>
+
+<h2><span class="num">04</span>The skeptical middle: is any of this real?</h2>
   <p>This is where the debate gets interesting, because a well&#8209;known paper argues the whole attention&#8209;vs&#8209;recurrence fight is being measured on a flawed benchmark.</p>
   <p><strong>The charge.</strong> Zeng et al., <em>Are Transformers Effective for Time Series Forecasting?</em> (AAAI 2023): a one&#8209;layer linear model with decomposition, DLinear, beat every sophisticated Transformer on nine standard long&#8209;term&#8209;forecasting benchmarks, often by 20&ndash;50%. The authors argue the Transformers&rsquo; apparent win came from using <em>direct multi&#8209;step</em> forecasting while their baselines were <em>iterative</em> and error&#8209;accumulating &mdash; not from attention capturing temporal structure. They also show Transformer error often fails to improve as the look&#8209;back window grows, which a model with real long&#8209;range capability should not do.</p>
   <p><strong>The rebuttal.</strong> The Hugging Face Autoformer blog (2023): DLinear&rsquo;s edge came from comparing <em>univariate</em> linear models against <em>multivariate</em> Transformers, and from the linear model&rsquo;s inability to use covariates &mdash; it cannot tell a weekend from a weekday. With equal&#8209;sized models under the same protocol, Transformers win.</p>
@@ -739,7 +748,9 @@
     <p class="tcap">Tags indicate which camp the result is normally cited for &mdash; not a verdict. Several rows point in both directions, which is rather the point.</p>
   </div>
 
-  <h2><span class="num">05</span>What the evidence, read together, suggests</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>The winning model of the M4 forecasting competition was N-BEATS — a pure MLP, with no recurrence and no attention. The most prestigious competition in forecasting was won by the least fashionable architecture in the room.</p></div>
+
+<h2><span class="num">05</span>What the evidence, read together, suggests</h2>
   <p>This is a reading, not a verdict. The editor decides what stands.</p>
   <ol class="reading">
     <li><strong>Architecture is rarely the first&#8209;order variable.</strong> Evaluation protocol, data regime &mdash; length, noise, periodicity, horizon, data volume, covariates &mdash; and normalization choices move results more than &ldquo;attention vs. recurrence.&rdquo;</li>
@@ -749,7 +760,9 @@
     <li><strong>&ldquo;Attention beats recurrence&rdquo; is not established for time series</strong> the way it is for language. The strongest honest statement is <mark>context&#8209;dependent</mark>.</li>
   </ol>
 
-  <h2><span class="num">06</span>Open forks &mdash; your call</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>The sharpest evidence against the forecasters was not their accuracy but their <em>scaling</em>: giving them a longer look-back window often made them no better. A model with genuine long-range ability should improve when you hand it more history. Theirs didn't.</p></div>
+
+<h2><span class="num">06</span>Open forks &mdash; your call</h2>
   <p>Nothing below is decided. Each is a fork with a real trade&#8209;off, surfaced rather than guessed.</p>
   <ul class="forks">
     <li><span class="fid">F1</span><span class="q">Scope of the axis.</span> Keep all four architectures, or narrow to just &ldquo;attention added to an LSTM &mdash; worth it or not?&rdquo;<span class="tr">Four&#8209;way is more honest but sprawling; two&#8209;way is sharper but drops both the Transformer fight and the xLSTM fight, which is where the noise is.</span></li>

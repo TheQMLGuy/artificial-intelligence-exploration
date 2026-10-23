@@ -27,6 +27,7 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-23 | Debate 005 opened (draft 0.1): what is the KV cache, and what is attention? | Attention as retrieval; the cache as its memoization; memory-bandwidth bottleneck; MHA/MQA/GQA; FlashAttention ≠ cache reduction. Six open forks. |
 | 2026-10-23 | Debates 004 and 005 MERGED into one chapter (004: "What is vLLM, the KV cache, and attention?"). | The three topics are one chain: attention → cache → system. Old separate chapters removed from repo and Drive. |
 | 2026-10-23 | Added "Further down the rabbit hole" reference sections to every chapter. | Categorized, annotated further-reading lists (papers, surveys, code) so each chapter can be read as a rabbit hole. |
+| 2026-10-23 | Added "Tangent" asides throughout every chapter's *body* (editor request: rabbit-hole type overall, not just a reference section). | Verifiable surprise facts woven into the prose — LSTM had no forget gate until 2000; ReLU dates to 1969; GQA is mean-pooled + 5% uptraining; a 70B KV cache exceeds H100 memory; random-kernel ROCKET beats deep nets; etc. |
 
 ## Open decisions (awaiting the editor)
 

@@ -209,6 +209,8 @@ the entry ticket, not the qualification.
 
 ---
 
+> **Tangent —** ReLU is older than the field that celebrates it. Fukushima used it in 1969 — as an “analog threshold element” — and it traces back further still, to Householder in 1941. It only became famous in 2010, and standard in 2011. The most important activation in deep learning waited roughly forty years for its moment.
+
 ## 2. So what does an activation function actually have to do?
 
 Nonlinearity is necessary and insufficient. The properties that actually matter,
@@ -242,6 +244,8 @@ this table:
    whose *derivative* keeps gradients in a sane range through many layers.
 
 ---
+
+> **Tangent —** Sigmoid's maximum derivative is 0.25. That means every layer can shrink the gradient by up to a factor of four — and 0.25¹⁰ is about one in a million. Vanishing gradients are not a mystery; they are arithmetic.
 
 ## 3. Why tanh — and why not (only) the other trigonometric functions?
 
@@ -306,6 +310,8 @@ is periodic. The choice of activation is a choice of *inductive bias*, not a
 search for "any nonlinear function."
 
 ---
+
+> **Tangent —** Swish was <em>found by a search algorithm</em>. Ramachandran et al. used reinforcement learning to search over activation functions and discovered x·σ(x). One of the best activations of the decade was not designed — it was discovered by a machine looking for one.
 
 ## 4. But Fourier can approximate anything — doesn't that settle it?
 
@@ -388,6 +394,8 @@ prior."
 
 ---
 
+> **Tangent —** GELU and Swish were derived independently, from different starting points — and they are numerically almost identical. GELU ended up inside BERT and GPT; Swish inside EfficientNet. Two names, one curve.
+
 ## 5. What the evidence, read together, suggests
 
 1. **Nonlinearity is necessary but not sufficient.** An activation must also be
@@ -420,6 +428,8 @@ prior."
    sin activations are the standard cures for it.
 
 ---
+
+> **Tangent —** There are over four hundred published activation functions. The survey is literally titled <em>A Comprehensive Survey of 400 Activation Functions</em>. Almost none of them beat ReLU — and the paper that lists them says so.
 
 ## 6. Open forks — your call
 

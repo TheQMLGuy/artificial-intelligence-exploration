@@ -143,6 +143,9 @@
   }
   @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
   ::selection{background:var(--accent); color:var(--paper);}
+  .wow{border:1px solid var(--rule-strong); border-left:3px solid var(--accent); background:var(--paper-2); padding:15px 20px 13px; margin:30px 0 34px; font-size:.97em; line-height:1.62;}
+  .wow__label{display:block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  .wow p{margin:0;}
 </style>
 </head>
 <body>
@@ -265,7 +268,9 @@
   </div>
   <p>That table is the answer to the original question, stated exactly: <strong>nonlinearity is the entry ticket, not the qualification.</strong></p>
 
-  <h2><span class="num">02</span>So what does an activation function actually have to do?</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>ReLU is older than the field that celebrates it. Fukushima used it in 1969 — as an “analog threshold element” — and it traces back further still, to Householder in 1941. It only became famous in 2010, and standard in 2011. The most important activation in deep learning waited roughly forty years for its moment.</p></div>
+
+<h2><span class="num">02</span>So what does an activation function actually have to do?</h2>
   <p>Nonlinearity is necessary and insufficient. The properties that actually matter, and how the usual suspects score:</p>
   <div class="tablewrap">
     <table>
@@ -289,7 +294,9 @@
 
   <div class="pull"><p>A shallow polynomial network is too weak; a deep one is too unstable. That is the whole problem with x&sup2; in one sentence.</p></div>
 
-  <h2><span class="num">03</span>Why tanh &mdash; and why not (only) the other trigonometric functions?</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>Sigmoid's maximum derivative is 0.25. That means every layer can shrink the gradient by up to a factor of four — and 0.25¹⁰ is about one in a million. Vanishing gradients are not a mystery; they are arithmetic.</p></div>
+
+<h2><span class="num">03</span>Why tanh &mdash; and why not (only) the other trigonometric functions?</h2>
 
   <h3>Why tanh won, historically</h3>
   <ul class="camps">
@@ -313,7 +320,9 @@
   <p>And yet <strong>sin is used</strong> &mdash; where periodicity <em>is</em> the right prior. <strong>SIREN</strong> (Sitzmann et al., 2020) uses sin as the activation for implicit neural representations: it represents images, audio, wavefields and 3-D shapes <em>and their derivatives</em> far better than ReLU or tanh, and it has an elegant property &mdash; the derivative of a SIREN is itself a SIREN (d/dx sin = cos = a phase-shifted sin). It needs a carefully designed initialisation (&omega;&#8320; = 30 for the first layer), the price of the periodic prior. And <strong>Fourier / trigonometric activations</strong> (2025) can train GPT-2 and ConvNeXt using a trigonometric basis.</p>
   <p>So the honest answer to &ldquo;why not other trigonometric ones?&rdquo; is: <strong>sin is not unused &mdash; it is specialised.</strong> tanh is a general-purpose squash built from exponentials; sin is a periodic prior that wins exactly when the data is periodic. Choosing an activation is choosing an <em>inductive bias</em>, not searching for &ldquo;any nonlinear function.&rdquo;</p>
 
-  <h2><span class="num">04</span>But Fourier can approximate anything &mdash; doesn&rsquo;t that settle it?</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>Swish was <em>found by a search algorithm</em>. Ramachandran et al. used reinforcement learning to search over activation functions and discovered x·σ(x). One of the best activations of the decade was not designed — it was discovered by a machine looking for one.</p></div>
+
+<h2><span class="num">04</span>But Fourier can approximate anything &mdash; doesn&rsquo;t that settle it?</h2>
   <p>The strongest form of the &ldquo;why not sin?&rdquo; objection runs like this: a Fourier series can represent any reasonable function, just as a Taylor series can &mdash; and it is built entirely out of sin and cos. So sin and cos are <em>the</em> universal building blocks. Why not use them as activations?</p>
   <p>It is a good argument, and following it carefully is instructive &mdash; because it turns out to prove something slightly different from what it seems to.</p>
   <p><strong>First, Fourier is not Taylor.</strong> They are different bases with different domains of validity. A Taylor series is <em>local</em>: it matches derivatives at a point, in the monomial basis {1, x, x&sup2;, &hellip;}, and converges only inside a radius set by the nearest singularity &mdash; at a discontinuity the radius collapses to zero and the series cannot even see the jump. A Fourier series is <em>global</em>: its coefficients are integrals over the whole period, in the trigonometric basis, and it converges in L&sup2; for <em>any</em> square-integrable function, discontinuities included. The analogy is loose, and the difference matters.</p>
@@ -334,7 +343,9 @@
   <p><strong>One caveat, for honesty.</strong> &ldquo;Fourier can approximate anything&rdquo; is qualified. Convergence is in L&sup2;, not uniform in general; at a jump discontinuity the partial sums overshoot by about 9% forever (the Gibbs phenomenon); and some continuous functions have Fourier series that diverge at a point. The universality is real but specific.</p>
   <p>The net effect: the Fourier argument does not settle the question &mdash; but it <em>upgrades</em> sin, from &ldquo;a specialised prior that happens to work for periodic signals&rdquo; to &ldquo;the candidate that passes every structural test and fails only on a soft, choosable prior.&rdquo;</p>
 
-  <h2><span class="num">05</span>What the evidence, read together, suggests</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>GELU and Swish were derived independently, from different starting points — and they are numerically almost identical. GELU ended up inside BERT and GPT; Swish inside EfficientNet. Two names, one curve.</p></div>
+
+<h2><span class="num">05</span>What the evidence, read together, suggests</h2>
   <p>This is a reading, not a verdict. The editor decides what stands.</p>
   <ol class="reading">
     <li><strong>Nonlinearity is necessary but not sufficient.</strong> An activation must also be non-polynomial (or otherwise escape the polynomial trap), numerically well-conditioned under depth, and carry the right inductive bias.</li>
@@ -347,7 +358,9 @@
     <li><strong>The Fourier argument upgrades sin rather than settling the question.</strong> A complete Fourier basis is a <em>representational</em> universality statement, not a statement about activations; and the Taylor half of the analogy is exactly what condemns x&sup2;. What the Fourier connection really delivers is <em>spectral bias</em> &mdash; the regularity of the activation sets the frequency decay of learning &mdash; which is why Fourier features and sin activations are the standard cures for it.</li>
   </ol>
 
-  <h2><span class="num">06</span>Open forks &mdash; your call</h2>
+  <div class="wow"><span class="wow__label">Tangent</span><p>There are over four hundred published activation functions. The survey is literally titled <em>A Comprehensive Survey of 400 Activation Functions</em>. Almost none of them beat ReLU — and the paper that lists them says so.</p></div>
+
+<h2><span class="num">06</span>Open forks &mdash; your call</h2>
   <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
   <ul class="forks">
     <li><span class="fid">F1</span><span class="q">Scope.</span> Keep this to &ldquo;why not x&sup2; / e<sup>x</sup> / log x&rdquo; plus &ldquo;what makes an activation,&rdquo; or open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish, parametric and learned activations)?<span class="tr">The zoo is where &ldquo;why choose at all?&rdquo; gets answered.</span></li>

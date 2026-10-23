@@ -61,6 +61,8 @@ That is the whole trick. The rest of the architecture is ordinary.
 
 ---
 
+> **Tangent —** Dilated convolution is also called <em>atrous</em> convolution — from the French <em>à trous</em>, “with holes”. The filter is a filter with gaps punched in it. The name explains the mechanism better than most textbooks do.
+
 ## 2. Why does convolution suit a time series at all?
 
 Four mechanisms, and they are the actual answer to "why":
@@ -90,6 +92,8 @@ Put together: convolution is not a capability, it is a **prior** — locality pl
 translation invariance. It wins when that prior is true of your data.
 
 ---
+
+> **Tangent —** The first convolutional network for <em>sequences</em> is from 1989 — Waibel's Time-Delay Neural Network, applied to speech. TCNs arrived thirty years later and are, structurally, its descendants. Sequence convolution is not new; it was simply out of fashion.
 
 ## 3. How well does it perform?
 
@@ -163,6 +167,8 @@ anomaly-detection F1 (86.3) beat the Transformer baselines it was compared again
 
 ---
 
+> **Tangent —** ROCKET never learns its filters. It uses <em>random</em> convolutional kernels followed by a plain linear classifier — and it reached state-of-the-art accuracy on the UCR archive at roughly a hundredth of the training cost. For time-series classification, the convolution is doing the work, not the learning.
+
 ## 4. Where CNNs fail — the honest limits
 
 1. **The receptive field is fixed.** A TCN can only see $$R$$ steps back. If the
@@ -184,6 +190,8 @@ anomaly-detection F1 (86.3) beat the Transformer baselines it was compared again
 
 ---
 
+> **Tangent —** WaveNet — the origin of dilated causal convolutions — was built to generate raw audio for Google's Assistant. The original model was far too slow to run in real time; the architecture that made it fast enough is the same one now used to forecast weather and electricity demand.
+
 ## 5. What the evidence, read together, suggests
 
 1. **Yes, CNNs work on time series** — but the working CNN is a TCN: causal,
@@ -201,6 +209,8 @@ anomaly-detection F1 (86.3) beat the Transformer baselines it was compared again
    quietly disabled (by normalisation) when they are not.
 
 ---
+
+> **Tangent —** TimesNet turns a forecasting problem into an image problem. It finds the dominant periods with an FFT, folds the 1-D series into a 2-D grid, and then applies ordinary 2-D image convolutions. A time series becomes a picture of itself.
 
 ## 6. Open forks — your call
 

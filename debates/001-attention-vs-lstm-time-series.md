@@ -73,6 +73,8 @@ recurrence as windows shorten.
 
 ---
 
+> **Tangent —** The LSTM you use is not the LSTM that won. Hochreiter &amp; Schmidhuber's 1997 paper — the one everyone cites — had only an input gate and an output gate. The <em>forget gate</em> arrived three years later, in 2000, in a paper whose title says it outright: <em>Learning to Forget</em>. The single most-used gate in the architecture was a sequel.
+
 ## 2. The case for attention
 
 **Long-range dependencies and unknown delay.** If the value that predicts time
@@ -101,6 +103,8 @@ function critically affects accuracy. Attention added to recurrence is a real,
 modest win — in the right regime.
 
 ---
+
+> **Tangent —** Sepp Hochreiter is the “H” in LSTM. In 2024 — twenty-seven years after the original paper — he returned to modernise his own architecture, publishing xLSTM. It is rare in any field for an author to come back a quarter-century later to fix their own creation.
 
 ## 3. The case for xLSTM
 
@@ -206,6 +210,8 @@ the protocol and on which benchmark you read.
 
 ---
 
+> **Tangent —** The same group did both halves of this debate. Informer, Autoformer and DLinear all come out of the same institution (Tsinghua). The people who built the Transformer forecasters also wrote the paper arguing those forecasters do not work. That is not a contradiction — it is a lab correcting its own benchmark.
+
 ## 4. The skeptical middle: is any of this real?
 
 This is where the debate gets interesting, because a well-known paper argues the
@@ -240,6 +246,8 @@ contested benchmarks.
 
 ---
 
+> **Tangent —** The winning model of the M4 forecasting competition was N-BEATS — a pure MLP, with no recurrence and no attention. The most prestigious competition in forecasting was won by the least fashionable architecture in the room.
+
 ## 5. What the evidence, read together, suggests
 
 This is a reading, not a verdict. The editor decides what stands.
@@ -267,6 +275,8 @@ This is a reading, not a verdict. The editor decides what stands.
    is for language. The strongest honest statement is *context-dependent*.
 
 ---
+
+> **Tangent —** The sharpest evidence against the forecasters was not their accuracy but their <em>scaling</em>: giving them a longer look-back window often made them no better. A model with genuine long-range ability should improve when you hand it more history. Theirs didn't.
 
 ## 6. Open forks — your call
 

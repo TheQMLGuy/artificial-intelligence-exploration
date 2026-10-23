@@ -50,6 +50,8 @@ That asymmetry is the hinge of the chapter.
 
 ---
 
+> **Tangent —** Attention was invented for translation. Bahdanau et al. introduced it in 2014 to let a decoder <em>look back</em> at the encoder's words — and the 2017 paper that removed the recurrence entirely was titled, with some swagger, <em>Attention Is All You Need</em>.
+
 ## 2. Why the cache exists
 
 Language models generate **autoregressively**: token `t` depends on all tokens before it.
@@ -71,6 +73,8 @@ Two properties deserve emphasis, because they are commonly misremembered:
   on every step.
 
 ---
+
+> **Tangent —** The KV cache changes nothing. Greedy generation with and without it produces <em>bit-identical</em> tokens. It is pure memoisation — the same answer, computed less wastefully.
 
 ## 3. The size — and why it is the bottleneck
 
@@ -102,6 +106,8 @@ doing almost no math — so the cache's size, not the model's, becomes the bindi
 constraint on batch size, throughput and context length.
 
 ---
+
+> **Tangent —** For a 70B model at 32k context, the KV cache alone is about 85.9 GB — larger than the entire 80 GB memory of an H100. The cache is bigger than the machine that has to hold it.
 
 ## 4. vLLM: the system that manages it
 
@@ -143,6 +149,8 @@ sequences and larger models — with model outputs bit-for-bit unchanged. This i
 systems work.
 
 ---
+
+> **Tangent —** PagedAttention is not a new idea so much as a borrowed one. It is operating-system virtual memory, transplanted: pages become blocks, bytes become tokens, processes become requests. The trick is roughly sixty years old — it had simply never been applied to a KV cache.
 
 ## 5. The debates
 
@@ -197,6 +205,8 @@ since they stress opposite resources.
 
 ---
 
+> **Tangent —** GQA was designed to be <em>retrofitted</em>. You take an existing multi-head model, mean-pool its key and value heads into groups, and continue training for just 5% of the original compute. Most of the world's fast models were converted, not retrained.
+
 ## 6. What the evidence, read together, suggests
 
 1. **The three objects are one chain.** Attention forces the cache; the cache is the
@@ -214,6 +224,8 @@ since they stress opposite resources.
    clear is most of the answer to "what is vLLM."
 
 ---
+
+> **Tangent —** Decode runs at roughly 1 FLOP per byte on a chip whose ridge point is 295. The tensor cores sit idle for the overwhelming majority of every generated token — the GPU is waiting on memory, not thinking. And it is getting worse: GPUs have gained about 3× more FLOPs every two years, but only about 1.6× more memory bandwidth.
 
 ## 7. Open forks — your call
 
