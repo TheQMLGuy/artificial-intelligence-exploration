@@ -37,6 +37,8 @@ the editor says so; every artifact carries a status line and a draft number.
 | 001 | Attention-augmented RNNs vs. LSTMs for time series | open — draft 0.2 |
 | 002 | Why not x², e^x — or log x? Is nonlinearity all we need, and why tanh? | open — draft 0.4 |
 | 003 | Can a CNN do time series? Why, and how well? | open — draft 0.1 |
+| 004 | What is vLLM? | open — draft 0.1 |
+| 005 | What is the KV cache, and what is attention? | open — draft 0.1 |
 
 ## Files
 
