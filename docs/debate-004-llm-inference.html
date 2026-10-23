@@ -180,41 +180,23 @@
 <article>
 
   <h2><span class="num">00</span>Framing: one machine, three objects</h2>
-  <p class="lead lead--drop">Asked separately, these three look like three topics. They are one chain. <strong>Attention</strong> is the operation &mdash; a learned retrieval. The <strong>KV cache</strong> is what autoregressive generation forces attention to keep. <strong>vLLM</strong> is the system that manages that cache so the machine can actually be fed.</p>
-  <div class="framing">
-    <span class="framing__label">Each one creates the next</span>
-    <ol>
-      <li>The <strong>operation</strong> creates the cache.</li>
-      <li>The <strong>cache</strong> becomes the bottleneck.</li>
-      <li>The <strong>bottleneck</strong> demands a system.</li>
-    </ol>
-  </div>
+  <p class="lead lead--drop">Asked separately, these three look like three topics. They are one chain. Attention is the operation, a learned retrieval. The KV cache is what autoregressive generation forces attention to keep. vLLM is the system that manages that cache so the machine can actually be fed.</p>
+  <p>Each one creates the next: the operation creates the cache, the cache becomes the bottleneck, and the bottleneck demands a system. The honest order is therefore attention, then the cache, then the system, and the three only make sense read together.</p>
 
   <h2><span class="num">01</span>Attention, minimally</h2>
-  <p>For each token, a self-attention layer projects its hidden state into three vectors: a <strong>query</strong> <code>q = W_q&middot;x</code>, a <strong>key</strong> <code>k = W_k&middot;x</code>, and a <strong>value</strong> <code>v = W_v&middot;x</code>. Then, for each query, it compares against every key and takes a weighted average of the values:</p>
+  <p>For each token, a self-attention layer projects its hidden state into three vectors: a query <code>q = W_q&middot;x</code>, a key <code>k = W_k&middot;x</code>, and a value <code>v = W_v&middot;x</code>. Then, for each query, it compares against every key and takes a weighted average of the values:</p>
   <div class="eq eq--lead">a<sub>ij</sub> = softmax( q<sub>i</sub> &middot; k<sub>j</sub> / &radic;d )<br>o<sub>i</sub> = &Sigma;<sub>j</sub> a<sub>ij</sub> &middot; v<sub>j</sub></div>
-  <p>That is the whole operation. Read plainly, it is a <strong>retrieval</strong>: the query is a search term, the keys are an index, and the output is a soft, weighted lookup into the values. Every token asks "which earlier tokens are relevant to me?" and pulls a blend of them.</p>
-  <ul class="camps">
-    <li><b>Compute is quadratic</b> in sequence length &mdash; the score matrix is <em>N &times; N</em>.</li>
-    <li><b>Two phases, opposite bottlenecks.</b> <em>Prefill</em> (the prompt) knows all tokens at once &rarr; matrix&ndash;matrix &rarr; <strong>compute-bound</strong>. <em>Decode</em> (generation) works one token at a time &rarr; matrix&ndash;<em>vector</em> &rarr; <strong>memory-bound</strong>.</li>
-  </ul>
-  <p>That asymmetry is the hinge of the whole chapter.</p>
+  <p>That is the whole operation, and read plainly it is a retrieval: the query is a search term, the keys are an index, and the output is a soft, weighted lookup into the values. Every token asks which earlier tokens are relevant to it and pulls a blend of them.</p>
+  <p>Two facts about its cost drive everything that follows. Compute is quadratic in sequence length, since the score matrix is <em>N</em> by <em>N</em>. And it has two phases with opposite bottlenecks. Prefill, the prompt, knows all tokens at once and is therefore a matrix-matrix product, which is compute-bound. Decode, generation, works one token at a time and is therefore a matrix-vector product, which is memory-bound. That asymmetry is the hinge of the chapter.</p>
 
-  <div class="wow"><span class="wow__label">Tangent</span><p>Attention was invented for translation. Bahdanau et al. introduced it in 2014 to let a decoder <em>look back</em> at the encoder's words — and the 2017 paper that removed the recurrence entirely was titled, with some swagger, <em>Attention Is All You Need</em>.</p></div>
+  <h2><span class="num">02</span>Why the cache exists</h2>
+  <p>Language models generate autoregressively, which means that token <em>t</em> depends on all the tokens before it. To produce token <em>t+1</em>, the model must attend over the keys and values of tokens 1 to <em>t</em>. Without a cache, every step would recompute the keys and values of the entire prefix, the same vectors over and over, and across a generation of <em>n</em> tokens that is <code>O(n&sup2;)</code> redundant work. The KV cache fixes it by storing the key and value vectors as they are produced, so that each step computes only the new token's key and value and attends over the cached ones.</p>
+  <p>Two properties deserve emphasis, because they are commonly misremembered. The first is that the cache changes nothing about the output. It is memoisation, not approximation, and generation with and without it produces identical tokens; it buys speed and never accuracy. The second is that it moves the cost from compute to memory. With the cache, each decode step is <code>O(n)</code> in attention, since it must read the whole cache, and <code>O(1)</code> in weight matrix products. The redundant compute is gone, and what remains is a large and growing tensor that must be read on every step.</p>
 
-<h2><span class="num">02</span>Why the cache exists</h2>
-  <p>Language models generate <strong>autoregressively</strong>: token <em>t</em> depends on all tokens before it. To produce token <em>t+1</em>, the model must attend over the keys and values of tokens <em>1 &hellip; t</em>. Without a cache, every step would recompute the keys and values of the <em>entire</em> prefix &mdash; the same vectors, over and over. Across a generation of <em>n</em> tokens that is <code>O(n&sup2;)</code> redundant work. The <strong>KV cache</strong> fixes it: store the key and value vectors as they are produced, so each step computes only the <em>new</em> token's <code>k</code> and <code>v</code> and attends over the cached ones.</p>
-  <ul class="camps">
-    <li><b>The cache changes nothing about the output.</b> It is memoization, not approximation &mdash; generation with and without it produces <em>identical</em> tokens. It buys speed, never accuracy.</li>
-    <li><b>It moves the cost from compute to memory.</b> Each decode step becomes <code>O(n)</code> in attention (it must <em>read</em> the whole cache) and <code>O(1)</code> in weight matrix products. The redundant compute is gone; what remains is a large, growing tensor read on every step.</li>
-  </ul>
-
-  <div class="wow"><span class="wow__label">Tangent</span><p>The KV cache changes nothing. Greedy generation with and without it produces <em>bit-identical</em> tokens. It is pure memoisation — the same answer, computed less wastefully.</p></div>
-
-<h2><span class="num">03</span>The size &mdash; and why it is the bottleneck</h2>
-  <p>The cache's size is simple to write down. For a model with <em>L</em> layers, <em>h</em> key/value heads, head dimension <em>d<sub>h</sub></em>, context length <em>S</em>, in 16-bit:</p>
-  <div class="eq">KV bytes = 2 (keys and values) &times; 2 (bytes) &times; L &times; h &times; d<sub>h</sub> &times; S = 4 &middot; L &middot; h &middot; d<sub>h</sub> &middot; S</div>
-  <p>It grows <strong>linearly in context length and batch size</strong> &mdash; and it is not a rounding error. For <strong>LLaMA-3-70B</strong> (<em>L</em>=80, <em>h</em>=64, <em>d<sub>h</sub></em>=128):</p>
+  <h2><span class="num">03</span>The size, and why it is the bottleneck</h2>
+  <p>The cache's size is simple to write down. For a model with <em>L</em> layers, <em>h</em> key/value heads, head dimension <em>d<sub>h</sub></em>, context length <em>S</em>, in sixteen-bit precision, the number of bytes is 2 for keys and values, times 2 bytes, times <em>L</em>, times <em>h</em>, times <em>d<sub>h</sub></em>, times <em>S</em>, which is 4&middot;L&middot;h&middot;d<sub>h</sub>&middot;S.</p>
+  <div class="eq">KV bytes = 4 &middot; L &middot; h &middot; d<sub>h</sub> &middot; S</div>
+  <p>It grows linearly in context length and in batch size, and it is not a rounding error. For LLaMA-3-70B, with <em>L</em> of 80, <em>h</em> of 64 and <em>d<sub>h</sub></em> of 128, the cache is about 10.7 GB at 4096 tokens and about 85.9 GB at 32,768 tokens, which is larger than the 80 GB of an H100. With GQA using eight key/value heads, the same figures fall to about 1.3 GB and about 10.7 GB.</p>
   <div class="tablewrap">
     <table>
       <thead><tr><th>Context length</th><th>KV cache (MHA)</th><th>With GQA (8 KV heads)</th></tr></thead>
@@ -224,79 +206,58 @@
       </tbody>
     </table>
   </div>
-  <p class="tcap">At 32k context the MHA cache alone exceeds the 80&nbsp;GB of an H100. One analysis puts an 8B model at batch 128 and 8,192 tokens at <strong>280&nbsp;GB</strong> of MHA cache &mdash; about 30&times; the model's own weights (69&nbsp;GB with GQA).</p>
-  <p>Now put that against the roofline. A kernel's <strong>arithmetic intensity</strong> &mdash; FLOPs per byte moved &mdash; decides whether it is compute- or memory-bound. On an H100 the <em>ridge point</em> is about <strong>295 FLOP/byte</strong>. Prefill sits well above it. Decode, at small batch, sits at roughly <strong>1 FLOP/byte</strong> &mdash; two to three orders of magnitude below the ridge. The tensor cores idle; measured GPU utilisation during decode can fall to around <strong>7%</strong>.</p>
-  <div class="pull"><p>The cache is not "large in the abstract." Decoding must re-read it every step while doing almost no math &mdash; so the cache's size, not the model's, becomes the binding constraint.</p></div>
+  <p>At scale it dwarfs the weights. One analysis of an 8B model at batch 128 and 8192 tokens of context puts the MHA cache at 280 GB, which is about thirty times the model's own weights, falling to 69 GB with GQA.</p>
+  <p>The reason this matters is the roofline. A kernel's arithmetic intensity, meaning FLOPs per byte moved, decides whether it is compute-bound or memory-bound. On an H100 the ridge point is about 295 FLOPs per byte. Prefill sits well above it, whereas decode at small batch sits at roughly 1 FLOP per byte, two to three orders of magnitude below the ridge. The tensor cores idle, and measured GPU utilisation during decode can fall to around 7 per cent. The cache is therefore not large in the abstract so much as re-read every step while doing almost no arithmetic, which makes the cache's size, rather than the model's, the binding constraint on batch size, throughput and context length.</p>
 
-  <div class="wow"><span class="wow__label">Tangent</span><p>For a 70B model at 32k context, the KV cache alone is about 85.9 GB — larger than the entire 80 GB memory of an H100. The cache is bigger than the machine that has to hold it.</p></div>
+  <div class="wow"><span class="wow__label">Tangent</span><p>For a 70B model at 32k context, the KV cache alone is about 85.9 GB, which is larger than the entire 80 GB memory of an H100. The cache is bigger than the machine that has to hold it.</p></div>
 
-<h2><span class="num">04</span>vLLM: the system that manages it</h2>
-  <p>vLLM is <strong>not</strong> a model, an architecture, or a training method. It is an <strong>inference engine</strong> &mdash; a serving system. Nothing about it changes what the model computes; it changes how fast and how cheaply the model can be <em>run</em>.</p>
-  <p><strong>The problem.</strong> Serving is memory-bound, and the memory is dominated by the KV cache. To keep a request's cache <em>contiguous</em>, prior systems pre-allocated a chunk sized to the request's <strong>maximum</strong> length. Three kinds of waste followed &mdash; slots reserved for future tokens, internal fragmentation, and external fragmentation. The measured result: in prior systems <mark>only 20.4%&ndash;38.2% of KV-cache memory was actually used</mark> to store real token states.</p>
-  <p><strong>The trick &mdash; PagedAttention.</strong> Borrow OS virtual-memory paging: split a request's cache into <strong>fixed-size blocks</strong>; let the blocks be <strong>non-contiguous</strong> in physical memory; and keep a per-request <strong>block table</strong> mapping logical blocks to physical ones &mdash; pages, tokens as bytes, requests as processes.</p>
-  <ul class="camps">
-    <li><b>Near-zero waste.</b> On-demand, uniform-size blocks kill external fragmentation and confine internal waste to the last, partly-filled block &mdash; in practice <strong>under 4%</strong>, against the 60&ndash;80% of the naive scheme.</li>
-    <li><b>Sharing becomes possible.</b> Sequences sharing a prefix can point at the <em>same</em> physical blocks. Parallel sampling saved 6&ndash;10% of memory; beam search, <strong>38&ndash;55%</strong>, and up to 66% on real chat data.</li>
-  </ul>
-  <p>On top sits <strong>continuous batching</strong> (iteration-level scheduling): finished requests are dropped and new ones admitted <strong>every decoding iteration</strong> &mdash; no padding, no head-of-line blocking.</p>
-  <div class="tablewrap">
-    <table>
-      <thead><tr><th>&nbsp;</th><th>Naive contiguous cache</th><th>PagedAttention</th></tr></thead>
-      <tbody>
-        <tr><td class="prop">KV-cache utilisation</td><td class="c">20.4&ndash;38.2%</td><td class="c win">&gt;96% (waste &lt;4%)</td></tr>
-        <tr><td class="prop">Cross-request sharing</td><td class="c">none</td><td class="c win">block-level</td></tr>
-        <tr><td class="prop">Throughput vs. baseline</td><td class="c">1&times;</td><td class="c win">2&ndash;4&times; (up to 22&times; vs. FT)</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="tcap">Model outputs are bit-for-bit unchanged. This is pure systems work.</p>
+  <h2><span class="num">04</span>vLLM: the system that manages it</h2>
+  <p>vLLM is not a model, an architecture, or a training method. It is an inference engine, a serving system, and nothing about it changes what the model computes. It changes how fast and how cheaply the model can be run.</p>
+  <p>The problem it addresses is that serving is memory-bound and the memory is dominated by the KV cache. To keep a request's cache contiguous, prior systems pre-allocated a chunk sized to the request's maximum length, and three kinds of waste followed: slots reserved for future tokens, internal fragmentation, and external fragmentation. The measured result was that only 20.4 to 38.2 per cent of KV-cache memory was actually used to store real token states.</p>
+  <p>The trick is PagedAttention, which borrows operating-system virtual memory paging. A request's KV cache is split into fixed-size blocks, the blocks need not be contiguous in physical memory, and a per-request block table maps logical blocks to physical ones, with pages becoming blocks, bytes becoming tokens, and processes becoming requests. The consequences are the whole point. Waste becomes near zero, because blocks are allocated on demand and all have the same size, which kills external fragmentation and confines internal waste to the last partly-filled block, in practice under 4 per cent against the 60 to 80 per cent of the naive scheme. And sharing becomes possible, because sequences that share a prefix can point at the same physical blocks; parallel sampling saved 6 to 10 per cent of memory and beam search saved 38 to 55 per cent, up to 66 per cent on real chat data.</p>
+  <p>On top of the paging sits continuous batching, or iteration-level scheduling, in which finished requests are dropped and new ones admitted every decoding iteration, with no padding and no head-of-line blocking. Together these give a throughput of two to four times that of FasterTransformer and Orca at the same latency, up to twenty-two times the request rate of FasterTransformer, with the gap widening for longer sequences and larger models. Model outputs are bit-for-bit unchanged, and this is pure systems work.</p>
 
-  <div class="wow"><span class="wow__label">Tangent</span><p>PagedAttention is not a new idea so much as a borrowed one. It is operating-system virtual memory, transplanted: pages become blocks, bytes become tokens, processes become requests. The trick is roughly sixty years old — it had simply never been applied to a KV cache.</p></div>
+  <h2><span class="num">05</span>The debates</h2>
+  <p>The first is architecture, meaning sharing the heads. MHA, the standard, has one key/value head per query head. MQA, from Shazeer in 2019, uses a single shared key/value head, which shrinks the cache by a factor of <em>h</em> but costs quality and requires replicating the single head across devices in distributed inference. GQA, from Ainslie and colleagues in 2023, groups the queries so that each group shares one key/value head, recovering most of the quality, and it is now the default in Llama 2 70B and Llama 3, Mistral and Qwen. MLA, from DeepSeek, caches a low-rank latent instead. The trade-off is explicit: quality against KV budget against parallelisability.</p>
+  <p>The second is management, meaning paging it. PagedAttention does not shrink the cache; it stops wasting it. The open question is whether paging is necessary at all, since vAttention, in 2024, argues that you can manage the cache dynamically with CUDA's own virtual-memory APIs, without a custom block abstraction.</p>
+  <p>The third is precision, meaning quantising it. Storing the cache in FP8 or INT4 halves or quarters the bytes, and FP8 gives a near-doubling of decode throughput in the memory-bound regime. The cautionary case is real, however: PyTorch found that an INT4 GQA cache read four times less data for no latency improvement at all, because the kernel was less bandwidth-efficient at INT4. Fewer bytes does not automatically mean faster.</p>
+  <p>The fourth is algorithmic, meaning not materialising it. FlashAttention is the standard example and also the site of a widespread confusion, because it does not reduce the KV cache. It is exact attention that avoids writing the <em>N</em> by <em>N</em> score matrix to slow HBM by tiling the computation into fast on-chip SRAM. On a GPT-2 attention block, HBM traffic fell from 40.3 GB to 4.4 GB and runtime from 41.7 milliseconds to 7.3, but the cache itself is unchanged. It slashes memory traffic and peak memory, which is a different problem on a different axis.</p>
+  <p>The fifth is approximation, the road not taken. Sparse and low-rank attention reduce FLOPs to near-linear in sequence length, yet many of them do not display wall-clock speedup against standard attention and have not gained wide adoption, precisely because they optimised FLOPs and ignored memory input and output. FlashAttention's lesson was the inverse: FLOPs are not time, and bytes moved are.</p>
+  <p>The sixth is the landscape. vLLM is one engine among several, alongside TensorRT-LLM from NVIDIA, which is often the fastest in raw latency but less flexible; TGI from Hugging Face; SGLang, whose RadixAttention attacks prefix reuse, which is a different axis; and LMDeploy. There is no universal winner, since throughput, latency, hardware support and features trade off differently per workload.</p>
+  <p>The seventh is whether this is research at all. The vLLM and PagedAttention paper appeared at SOSP, an operating-systems venue rather than an ML conference, which is the debate in miniature: as architecture matures the bottleneck moves to systems, and the most impactful work stops looking like ML. A systems-level trend sits above all of these, which is prefill and decode disaggregation, running the compute-bound prefill and the memory-bound decode on different hardware because they stress opposite resources.</p>
 
-<h2><span class="num">05</span>The debates</h2>
-  <p><strong>D1 &mdash; Architecture: share the heads.</strong> Make fewer keys and values to begin with. <em>MHA</em> (standard) has one key/value head per query head. <em>MQA</em> (Shazeer, 2019) uses a single shared key/value head &mdash; the cache shrinks by a factor of <em>h</em>, but quality suffers and the single head must be replicated across devices. <em>GQA</em> (Ainslie et al., 2023) groups queries, each group sharing one key/value head &mdash; recovering most of the quality; now the default in Llama 2 70B / Llama 3, Mistral, Qwen. <em>MLA</em> (DeepSeek) caches a low-rank latent instead. The trade-off is explicit: <strong>quality vs. KV budget vs. parallelizability.</strong></p>
-  <p><strong>D2 &mdash; Management: page it.</strong> PagedAttention does not shrink the cache; it stops <em>wasting</em> it. But is paging <em>necessary</em>? <em>vAttention</em> (2024) argues you can manage the cache dynamically with CUDA's own virtual-memory APIs, without a custom block abstraction.</p>
-  <p><strong>D3 &mdash; Precision: quantize it.</strong> FP8 or INT4 halves or quarters the bytes, and FP8 gives a near-2&times; decode win. But PyTorch found an INT4 GQA cache read <strong>4&times; less data for no latency improvement at all</strong>, because the kernel was less bandwidth-efficient. <strong>Fewer bytes &ne; faster.</strong></p>
-  <p><strong>D4 &mdash; Algorithm: don't materialize it.</strong> A widespread confusion: <strong>FlashAttention does <em>not</em> reduce the KV cache.</strong> It is <em>exact</em> attention that avoids writing the <em>N &times; N</em> score matrix to slow HBM, by tiling into on-chip SRAM. On a GPT-2 attention block, HBM traffic fell <strong>40.3&nbsp;GB &rarr; 4.4&nbsp;GB</strong> and runtime <strong>41.7&nbsp;ms &rarr; 7.3&nbsp;ms</strong>. The cache itself is unchanged.</p>
-  <p><strong>D5 &mdash; Approximation: the road not taken.</strong> Sparse and low-rank attention reduce <em>FLOPs</em> to near-linear, yet many "do not display wall-clock speedup against standard attention, and have not gained wide adoption" &mdash; because they optimised FLOPs and ignored memory I/O. <strong>FLOPs are not time; bytes moved are.</strong></p>
-  <p><strong>D6 &mdash; The landscape.</strong> vLLM is one engine among several: <em>TensorRT-LLM</em> (NVIDIA; often fastest raw latency), <em>TGI</em> (Hugging Face), <em>SGLang</em> (RadixAttention &mdash; <em>prefix</em> reuse, a different axis), <em>LMDeploy</em>. No universal winner; the trade-offs are workload-dependent.</p>
-  <p><strong>D7 &mdash; Is this research?</strong> The vLLM paper appeared at <strong>SOSP</strong>, an operating-systems venue &mdash; not an ML conference. As architecture matures, the bottleneck moves to <em>systems</em>, and the most impactful work stops looking like ML.</p>
-  <p>A systems-level trend sits above all of these: <strong>prefill/decode disaggregation</strong> &mdash; running the compute-bound prefill and the memory-bound decode on <em>different</em> hardware, since they stress opposite resources.</p>
+  <div class="wow"><span class="wow__label">Tangent</span><p>The KV cache changes nothing. Greedy generation with and without it produces bit-identical tokens. It is pure memoisation: the same answer, computed less wastefully.</p></div>
 
-  <div class="wow"><span class="wow__label">Tangent</span><p>GQA was designed to be <em>retrofitted</em>. You take an existing multi-head model, mean-pool its key and value heads into groups, and continue training for just 5% of the original compute. Most of the world's fast models were converted, not retrained.</p></div>
+  <div class="wow"><span class="wow__label">Tangent</span><p>PagedAttention is not so much a new idea as a borrowed one. It is operating-system virtual memory, transplanted: pages become blocks, bytes become tokens, processes become requests. The trick is roughly sixty years old, and it had simply never been applied to a KV cache.</p></div>
 
-<h2><span class="num">06</span>What the evidence, read together, suggests</h2>
-  <ol class="reading">
-    <li><strong>The three objects are one chain.</strong> Attention forces the cache; the cache is the bottleneck; vLLM is one answer to it.</li>
-    <li><strong>The cache is exact.</strong> It never changes the output &mdash; only the speed &mdash; and it moves cost from compute to memory.</li>
-    <li><strong>Decode is memory-bandwidth-bound</strong>, and arithmetic intensity is why. This is why <em>batching</em> is the primary lever and why the cache is worth shrinking.</li>
-    <li><strong>The fixes live on different axes</strong> &mdash; architecture, management, precision, algorithm &mdash; and they <strong>compose</strong>. GQA + PagedAttention + FP8 + FlashAttention is a coherent stack, not four rival ideas.</li>
-    <li><strong>FLOPs are not wall-clock.</strong> The approximate-attention story and the INT4 story are the same cautionary tale from opposite directions.</li>
-    <li><strong>vLLM is a memory manager and a scheduler</strong>, not a model. Keeping that boundary clear is most of the answer to "what is vLLM."</li>
-  </ol>
+  <h2><span class="num">06</span>What the evidence, read together, suggests</h2>
+  <p>This is a reading, not a verdict. The editor decides what stands.</p>
+  <p>The three objects are one chain, in that attention forces the cache, the cache is the bottleneck, and vLLM is one answer to it. The cache is exact, never changing the output and only moving cost from compute to memory. Decode is memory-bandwidth-bound, and arithmetic intensity is the reason, which is why batching is the primary lever and why the cache is worth shrinking. The fixes live on different axes, being architecture, management, precision and algorithm, and they compose: GQA with PagedAttention, FP8 and FlashAttention is a coherent stack rather than four rival ideas. FLOPs are not wall-clock, and the approximate-attention story and the INT4 story are the same cautionary tale from opposite directions. vLLM, finally, is a memory manager and a scheduler rather than a model, and keeping that boundary clear is most of the answer to the question of what vLLM is.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>GQA was designed to be retrofitted. You take an existing multi-head model, mean-pool its key and value heads into groups, and continue training for just 5 per cent of the original compute. Most of the world's fast models were converted rather than retrained.</p></div>
 
   <div class="cross">
     <span class="framing__label">Cross-debate notes</span>
     <ul>
-      <li><strong>Debate 001 (attention vs LSTM)</strong> argued about the <em>architecture</em>; this chapter is about the <em>cost of running</em> it. The first-order variable moved from model choice to memory management.</li>
-      <li><strong>Debate 003 (CNN for time series)</strong> found a component's power is a <em>prior</em>, not a capability. Here the "component" is the allocator: paging's power is not extra compute, it is <em>not wasting</em> memory.</li>
+      <li><strong>Debate 001 (attention vs LSTM)</strong> argued about the architecture, whereas this chapter is about the cost of running it; the first-order variable has moved from model choice to memory management.</li>
+      <li><strong>Debate 003 (CNN for time series)</strong> found that a component's power is a prior rather than a capability, and here the component is the allocator, whose power is not extra compute but the absence of waste.</li>
     </ul>
   </div>
 
-  <div class="wow"><span class="wow__label">Tangent</span><p>Decode runs at roughly 1 FLOP per byte on a chip whose ridge point is 295. The tensor cores sit idle for the overwhelming majority of every generated token — the GPU is waiting on memory, not thinking. And it is getting worse: GPUs have gained about 3× more FLOPs every two years, but only about 1.6× more memory bandwidth.</p></div>
-
-<h2><span class="num">07</span>Open forks &mdash; your call</h2>
+  <h2><span class="num">07</span>Open forks &mdash; your call</h2>
+  <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
   <ul class="forks">
-    <li><span class="fid">F1</span><span class="q">Depth of the attention section.</span> Minimal "retrieval," or develop it (multiple heads, positional encoding, causal masking, why &radic;d)?</li>
-    <li><span class="fid">F2</span><span class="q">Which axis to go deep on?</span> Architecture, management, precision, or algorithm?<span class="tr">They are separable; better to do one properly than four shallowly.</span></li>
-    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> A small script computing KV-cache size and arithmetic intensity across models, batches and contexts &mdash; and plotting the roofline.</li>
-    <li><span class="fid">F4</span><span class="q">The paging debate.</span> Chase vAttention's "you don't need paging" claim?</li>
-    <li><span class="fid">F5</span><span class="q">The landscape.</span> vLLM alone, or the serving engines as a family?</li>
+    <li><span class="fid">F1</span><span class="q">Depth of the attention section.</span> Keep the minimal treatment, or develop it with multiple heads, positional encoding, causal masking and the reason for the square root of <em>d</em>?</li>
+    <li><span class="fid">F2</span><span class="q">Which axis to go deep on?</span> Architecture, management, precision, or algorithm?<span class="tr">They are separable, and it is better to do one properly than four shallowly.</span></li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> A small script that computes KV-cache size and arithmetic intensity across models, batch sizes and context lengths, and plots the roofline.<span class="tr">Cheap, and it would make the chapter quantitative.</span></li>
+    <li><span class="fid">F4</span><span class="q">The paging debate.</span> Chase vAttention's claim that you do not need paging?</li>
+    <li><span class="fid">F5</span><span class="q">The landscape.</span> Keep vLLM alone, or compare the serving engines as a family?</li>
     <li><span class="fid">F6</span><span class="q">Deliverable shape.</span> Same as before?</li>
-    <li><span class="fid">F7</span><span class="q">Verdict policy.</span> Same &mdash; does a debate ever get marked <em>settled</em>?</li>
+    <li><span class="fid">F7</span><span class="q">Verdict policy.</span> Same, in that a debate does eventually get marked <em>settled</em>, or not?</li>
   </ul>
 
-  <section class="rabbit">
+
+<section class="rabbit">
     <h2>Further down the rabbit hole</h2>
     <p>Everything below is real, and grouped so you can go as deep as you want.</p>
 

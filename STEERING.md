@@ -28,6 +28,7 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-23 | Debates 004 and 005 MERGED into one chapter (004: "What is vLLM, the KV cache, and attention?"). | The three topics are one chain: attention → cache → system. Old separate chapters removed from repo and Drive. |
 | 2026-10-23 | Added "Further down the rabbit hole" reference sections to every chapter. | Categorized, annotated further-reading lists (papers, surveys, code) so each chapter can be read as a rabbit hole. |
 | 2026-10-23 | Added "Tangent" asides throughout every chapter's *body* (editor request: rabbit-hole type overall, not just a reference section). | Verifiable surprise facts woven into the prose — LSTM had no forget gate until 2000; ReLU dates to 1969; GQA is mean-pooled + 5% uptraining; a 70B KV cache exceeds H100 memory; random-kernel ROCKET beats deep nets; etc. |
+| 2026-10-23 | Full language pass on every chapter (editor: "the language is too AI-ish"). | Removed the AI tells: em-dashes, bold sentence-leads, punchy one-line paragraphs, "not X but Y" reveals, rhetorical questions. Rewritten as flowing prose. Facts, structure, tables and references unchanged. |
 
 ## Open decisions (awaiting the editor)
 
