@@ -22,6 +22,7 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-22 | Debate 003 opened (draft 0.1): can a CNN do time series? | TCN / dilated causal convs / receptive field; ModernTCN + TimesNet; ROCKET + InceptionTime. Six open forks. |
 | 2026-10-22 | Debate 002 bumped to draft 0.2: added the e^x case. | e^x passes the non-polynomial test and still fails on conditioning; ELU as the tamed exponential. |
 | 2026-10-22 | Debate 002 bumped to draft 0.3: added the log x case. | log x fails on *domain* (undefined for x ≤ 0) — a third distinct failure mode. Taxonomy table added. |
+| 2026-10-22 | Debate 002 bumped to draft 0.4: added section 04 ("But Fourier can approximate anything?"). | Fourier ≠ Taylor; complete basis ≠ good activation; spectral bias / frequency principle. Verdict on sin upgraded. |
 
 ## Open decisions (awaiting the editor)
 
@@ -34,7 +35,7 @@ From Debate 003, Section 06:
 - [ ] **D3-F5** — Deliverable shape: same as before?
 - [ ] **D3-F6** — Verdict policy: same as before?
 
-From Debate 002, Section 05:
+From Debate 002, Section 06:
 
 - [ ] **D2-F1** — Scope: "why not x²" + "what makes an activation," or the full activation zoo?
 - [ ] **D2-F2** — Mathematical depth: keep the one-line proof, or develop the Leshno theorem properly?

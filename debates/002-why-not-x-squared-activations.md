@@ -1,6 +1,6 @@
 # Debate 002 — Why not x²? Is nonlinearity all we need, and why tanh?
 
-**Status:** open — draft 0.3
+**Status:** open — draft 0.4
 **Opened:** 2026-10-22
 **Editor:** Divyansh Tripathi
 **Written by:** AI assistant
@@ -307,7 +307,88 @@ search for "any nonlinear function."
 
 ---
 
-## 4. What the evidence, read together, suggests
+## 4. But Fourier can approximate anything — doesn't that settle it?
+
+The strongest form of the "why not sin?" objection runs like this: a Fourier series
+can represent any reasonable function, just as a Taylor series can — and it is built
+entirely out of sin and cos. So sin and cos are *the* universal building blocks. Why
+not use them as activations?
+
+It is a good argument, and following it carefully is instructive — because it turns
+out to prove something slightly different from what it seems to.
+
+**First, Fourier is not Taylor.** They are different bases with different domains of
+validity. A Taylor series is *local*: it matches derivatives at a point, in the
+monomial basis {1, x, x², …}, and converges only inside a radius set by the nearest
+singularity — at a discontinuity the radius collapses to zero and the series cannot
+even see the jump. A Fourier series is *global*: its coefficients are integrals over
+the whole period, in the trigonometric basis, and it converges in L² for *any*
+square-integrable function, discontinuities included. The analogy is loose, and the
+difference matters.
+
+**Second — and this is the twist — the Taylor half of the analogy is exactly why x²
+fails.** Take the Taylor route to features and you get polynomials: monomials xⁿ. A
+polynomial activation gives you precisely a truncated Taylor basis, and we showed in
+section 1 that a single-hidden-layer x² network collapses to a quadratic form — a
+Taylor expansion truncated at degree 2. So the Taylor analogy *diagnoses* the x²
+failure. The Fourier analogy is the right one instead, because sin is not a
+polynomial. Followed carefully, the analogy picks out the exact dividing line:
+**polynomial basis → fails; non-polynomial basis → passes.**
+
+**Third, "a complete basis" is not "a good activation."** These are two different
+universality statements:
+
+- *Representational universality.* The fixed family {1, sin(nx), cos(nx) : n ∈ ℕ} is
+a complete orthonormal basis of L². But using it means summing *countably many fixed
+terms* — for sharp features, very many of them.
+- *Learnable universality.* The set {Σ vⱼ sin(wⱼx + bⱼ)} with *finitely many, learned*
+frequencies is dense in C(K) — this is Leshno's theorem, and sin qualifies because it
+is non-polynomial.
+
+The completeness of the Fourier basis says nothing about activations. The activation's
+job is to make a *finite, learned* network dense — a different theorem. And the reason
+a network beats a fixed Fourier expansion is that it *learns which frequencies matter*:
+it is an adaptive, sparse Fourier representation.
+
+**Fourth — the part that actually matters for activations: spectral bias.** Here the
+Fourier connection pays off. Networks trained by gradient descent fit their target
+**from low frequencies to high** — a phenomenon called *spectral bias* (Rahaman et al.,
+2019) or the *frequency principle* (Xu et al.). The mechanism is striking: **the
+regularity of the activation function translates into the decay rate of the loss in
+the frequency domain.** A smoother activation ⇒ a more strongly low-frequency-biased
+network ⇒ high-frequency content is learned slowly, or not at all.
+
+This reframes the trig question entirely. The sinusoid is not a curiosity — it is the
+basis of the two main *cures* for spectral bias:
+
+- **Fourier features as input encoding** (Tancik et al., 2020): mapping the input
+through sin/cos at random frequencies turns the network's effective kernel into a
+stationary one with a *tunable bandwidth*, letting it learn high frequencies.
+- **sin as the activation** (SIREN): a periodic activation, with a deliberately
+high-frequency first layer, represents high-frequency signals *and their derivatives*
+far better than ReLU or tanh.
+
+**Where this leaves sin.** It is, in fact, the best-conditioned of all our candidates.
+It is defined on all of ℝ (unlike log x), bounded (unlike x² and e^x), smooth, with a
+bounded derivative (|cos| ≤ 1) — and non-polynomial (unlike x²). It passes *every*
+structural test. Its only weakness is the *inductive bias*: periodicity means aliasing
+and infinitely many local minima. But that is a **soft** failure, and a *choosable*
+prior — which is exactly why SIREN works: the right initialization turns the liability
+into an advantage for periodic and high-frequency signals.
+
+**One caveat, for honesty.** "Fourier can approximate anything" is qualified.
+Convergence is in L², not uniform in general; at a jump discontinuity the partial sums
+overshoot by about 9% forever (the Gibbs phenomenon); and some continuous functions
+have Fourier series that diverge at a point. The universality is real but specific.
+
+The net effect: the Fourier argument does not settle the question — but it *upgrades*
+sin, from "a specialised prior that happens to work for periodic signals" to "the
+candidate that passes every structural test and fails only on a soft, choosable
+prior."
+
+---
+
+## 5. What the evidence, read together, suggests
 
 1. **Nonlinearity is necessary but not sufficient.** An activation must also be
    non-polynomial (or otherwise escape the polynomial trap), numerically
@@ -331,10 +412,16 @@ search for "any nonlinear function."
 7. **Trigonometric activations are a live tool, not a forbidden zone** — sin wins
    where the signal is periodic (SIREN), and the bias term is what makes any of it
    work.
+8. **The Fourier argument upgrades sin rather than settling the question.** A complete
+   Fourier basis is a *representational* universality statement, not a statement about
+   activations; and the Taylor half of the analogy is exactly what condemns x². What
+   the Fourier connection really delivers is *spectral bias* — the regularity of the
+   activation sets the frequency decay of learning — which is why Fourier features and
+   sin activations are the standard cures for it.
 
 ---
 
-## 5. Open forks — your call
+## 6. Open forks — your call
 
 **F1. Scope.** Keep this to "why not x² / e^x / log x" plus "what makes an
 activation," or open it into the full zoo (ReLU family, ELU, GELU, Swish, Mish,
@@ -386,6 +473,11 @@ table), or different?
   Neural Networks* (NLReLU). 2019. arXiv:1908.03682.
 - *A Comprehensive Survey of 400 Activation Functions.* 2024. (LAF / symlog,
   log-sigmoid, logish, NLReLU, symexp.)
+- Rahaman et al. *On the Spectral Bias of Neural Networks.* ICML 2019.
+- Xu et al. *Frequency Principle: Fourier Analysis Sheds Light on Deep Neural
+  Networks.* arXiv:1901.06523.
+- Tancik et al. *Fourier Features Let Networks Learn High Frequency Functions in Low
+  Dimensional Domains.* NeurIPS 2020. arXiv:2006.10739.
 - Chrysos, Moschoglou, Bouritsas, Deng, Panagakis. *Deep Polynomial Neural
   Networks.* IEEE TPAMI, 2022.
 - Dubey, Singh, Chaudhuri. *Activation Functions in Deep Learning: A Comprehensive
