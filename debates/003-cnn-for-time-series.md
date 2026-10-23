@@ -259,3 +259,58 @@ This debate is the same shape as the others, and the convergence is the point:
   classification using random convolutional kernels.* DMKD, 2020. arXiv:1910.13051.
 - Hewamalage, Bergmeir, Bandara. *An Experimental Review on Deep Learning
   Architectures for Time Series Forecasting*, 2021. arXiv:2103.12057.
+
+---
+
+## Further down the rabbit hole
+
+Everything below is real, and grouped so you can go as deep as you want.
+
+**Convolution for sequences**
+- van den Oord et al. *WaveNet: A Generative Model for Raw Audio.* 2016.
+  arXiv:1609.03499.
+- Yu & Koltun. *Multi-Scale Context Aggregation by Dilated Convolutions.* ICLR 2016.
+  arXiv:1511.07122.
+- Lea et al. *Temporal Convolutional Networks for Action Segmentation and Detection.*
+  2016.
+- Bai, Kolter, Koltun. *An Empirical Evaluation of Generic Convolutional and Recurrent
+  Networks for Sequence Modeling.* 2018. arXiv:1803.01271.
+
+**Forecasting with convolutions**
+- Wu et al. *TimesNet.* ICLR 2023. arXiv:2210.02186.
+- Luo & Wang. *ModernTCN.* ICLR 2024.
+- Liu et al. *SCINet: Time Series Modeling and Forecasting with Sample Convolution and
+  Interaction.* NeurIPS 2022. arXiv:2106.09305.
+- Oreshkin et al. *N-BEATS.* ICLR 2020. arXiv:1905.10437.
+- Hewamalage, Bergmeir, Bandara. *An Experimental Review on Deep Learning Architectures
+  for Time Series Forecasting.* 2021. arXiv:2103.12057.
+- *ModernTCN Revisited: A Reproducibility Study with Extended Benchmarks.* 2025.
+
+**Classification with convolutions**
+- Wang, Oates, Bailis. *Time Series Classification from Scratch with Deep Neural
+  Networks (FCN / ResNet).* IJCNN 2017. arXiv:1611.06455.
+- Ismail Fawaz et al. *InceptionTime: Finding AlexNet for Time Series Classification.*
+  DMKD 2020. arXiv:1909.04939.
+- Dempster, Petitjean, Webb. *ROCKET.* DMKD 2020. arXiv:1910.13051.
+- Dempster et al. *MiniRocket: A Very Fast (Almost) Deterministic Transform.* KDD 2021.
+  arXiv:2012.08791.
+- Dempster et al. *Hydra: Competing Convolutional Kernels for Fast and Accurate Time
+  Series Classification.* DMKD 2023. arXiv:2203.10807.
+- Dau et al. *The UCR Time Series Archive.* 2018. arXiv:1810.07758.
+- Bagnall et al. *The UEA Multivariate Time Series Classification Archive.* 2018.
+  arXiv:1811.00075.
+
+**Surveys & archives**
+- Zhao et al. *Convolutional Neural Networks for Time Series Classification: A Review.*
+  2017. arXiv:1709.05206.
+- Bagnall et al. *The Great Time Series Classification Bake Off.* DMKD 2017.
+  arXiv:1602.01711.
+- Ismail Fawaz et al. *Deep Learning for Time Series Classification: A Review.* DMKD
+  2019. arXiv:1809.04356.
+- Godahewa et al. *Monash Time Series Forecasting Archive.* 2021. arXiv:2105.06643.
+- Middlehurst et al. *Bake off redux: A Review and Experimental Evaluation of Recent
+  Time Series Classification Algorithms.* DMKD 2024.
+
+**Code**
+- Repositories: timeseriesAI/tsai; hfawaz/dl-4-tsc; cure-lab/TimesNet; luo-chen/ModernTCN;
+  angus924/rocket.

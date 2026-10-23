@@ -25,26 +25,20 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-22 | Debate 002 bumped to draft 0.4: added section 04 ("But Fourier can approximate anything?"). | Fourier ≠ Taylor; complete basis ≠ good activation; spectral bias / frequency principle. Verdict on sin upgraded. |
 | 2026-10-23 | Debate 004 opened (draft 0.1): what is vLLM? | Inference engine, not a model. PagedAttention; continuous batching; 2–4× throughput. Six open forks. |
 | 2026-10-23 | Debate 005 opened (draft 0.1): what is the KV cache, and what is attention? | Attention as retrieval; the cache as its memoization; memory-bandwidth bottleneck; MHA/MQA/GQA; FlashAttention ≠ cache reduction. Six open forks. |
+| 2026-10-23 | Debates 004 and 005 MERGED into one chapter (004: "What is vLLM, the KV cache, and attention?"). | The three topics are one chain: attention → cache → system. Old separate chapters removed from repo and Drive. |
+| 2026-10-23 | Added "Further down the rabbit hole" reference sections to every chapter. | Categorized, annotated further-reading lists (papers, surveys, code) so each chapter can be read as a rabbit hole. |
 
 ## Open decisions (awaiting the editor)
 
-From Debate 005, Section 06:
+From Debate 004, Section 07 (merged vLLM + KV cache + attention):
 
-- [ ] **D5-F1** — Depth of the attention section?
-- [ ] **D5-F2** — Which axis to go deep on (architecture / management / precision / algorithm)?
-- [ ] **D5-F3** — Run the KV-size + arithmetic-intensity experiment?
-- [ ] **D5-F4** — Reconcile with Debate 004, or keep separate?
-- [ ] **D5-F5** — Deliverable shape?
-- [ ] **D5-F6** — Verdict policy?
-
-From Debate 004, Section 05:
-
-- [ ] **D4-F1** — Depth: overview or the paging mechanics?
-- [ ] **D4-F2** — vLLM alone, or the serving-engine family?
-- [ ] **D4-F3** — Run the serving benchmark?
+- [ ] **D4-F1** — Depth of the attention section?
+- [ ] **D4-F2** — Which axis to go deep on (architecture / management / precision / algorithm)?
+- [ ] **D4-F3** — Run the KV-size + arithmetic-intensity experiment?
 - [ ] **D4-F4** — Chase vAttention's "no paging needed" claim?
-- [ ] **D4-F5** — Deliverable shape?
-- [ ] **D4-F6** — Verdict policy?
+- [ ] **D4-F5** — vLLM alone, or the serving-engine family?
+- [ ] **D4-F6** — Deliverable shape?
+- [ ] **D4-F7** — Verdict policy?
 
 From Debate 003, Section 06:
 

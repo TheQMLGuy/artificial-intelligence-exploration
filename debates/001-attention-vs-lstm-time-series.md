@@ -335,3 +335,67 @@ right now.*
 - *Two Steps Forward and One Behind: Rethinking Time Series Forecasting with Deep
   Learning*, 2023. arXiv:2304.04553.
 - *Transformers versus LSTMs for Electronic (price prediction)*, OpenReview.
+
+---
+
+## Further down the rabbit hole
+
+Everything below is real, and grouped so you can go as deep as you want.
+
+**Foundations**
+- Hochreiter & Schmidhuber. *Long Short-Term Memory.* Neural Computation, 1997.
+- Cho et al. *Learning Phrase Representations using RNN Encoder-Decoder (GRU).* EMNLP
+  2014. arXiv:1406.1078.
+- Bahdanau, Cho, Bengio. *Neural Machine Translation by Jointly Learning to Align and
+  Translate.* ICLR 2015. arXiv:1409.0473.
+- Vaswani et al. *Attention Is All You Need.* NeurIPS 2017. arXiv:1706.03762.
+- Lim et al. *Temporal Fusion Transformers for Interpretable Multi-horizon Time Series
+  Forecasting.* 2019. arXiv:1912.09363.
+- Salinas et al. *DeepAR: Probabilistic Forecasting with Autoregressive Recurrent
+  Networks.* 2017. arXiv:1704.04110.
+
+**The forecasting debate**
+- Zhou et al. *Informer.* AAAI 2021. arXiv:2012.07436.
+- Wu et al. *Autoformer.* NeurIPS 2021. arXiv:2106.13008.
+- Zhou et al. *FEDformer.* ICML 2022. arXiv:2201.12740.
+- Nie et al. *A Time Series is Worth 64 Words (PatchTST).* ICLR 2023. arXiv:2211.14730.
+- Zeng et al. *Are Transformers Effective for Time Series Forecasting?* AAAI 2023.
+  arXiv:2205.13504. (DLinear.)
+- Oreshkin et al. *N-BEATS.* ICLR 2020. arXiv:1905.10437.
+- Challu et al. *N-HiTS.* AAAI 2023. arXiv:2201.12886.
+
+**Skeptical / contrarian**
+- Hugging Face. *Yes, Transformers are Effective for Time Series Forecasting (+ Autoformer).*
+  2023. (Rebuttal to DLinear.)
+- *Two Steps Forward and One Behind: Rethinking Time Series Forecasting with Deep
+  Learning.* 2023. arXiv:2304.04553.
+- Elsayed et al. *Do We Really Need Deep Learning Models for Time Series Forecasting?*
+  2021. arXiv:2101.02118.
+- Makridakis et al. *The M4 Competition.* International Journal of Forecasting, 2020.
+
+**Modern recurrence (the xLSTM thread)**
+- Beck et al. *xLSTM: Extended Long Short-Term Memory.* NeurIPS 2024. arXiv:2405.04517.
+- Beck et al. *xLSTM 7B.* ICML 2025. arXiv:2503.13427.
+- Alharthi & Mahmood. *xLSTMTime.* AI (MDPI) 2024. arXiv:2407.10240.
+- Kraus et al. *xLSTM-Mixer.* NeurIPS 2025. arXiv:2410.16928.
+- Gu, Goel, Ré. *S4.* ICLR 2022. arXiv:2111.00396.
+- Gu & Dao. *Mamba.* 2023. arXiv:2312.00752.
+- Peng et al. *RWKV.* 2023. arXiv:2305.13048.
+- Katharopoulos et al. *Transformers are RNNs (Linear Attention).* ICML 2020.
+  arXiv:2006.16236.
+- Ludwig. *Competitiveness of xLSTM Variants across Formal Language Tasks.* 2026.
+  (Independent report.)
+
+**Surveys & benchmarks**
+- Hewamalage, Bergmeir, Bandara. *An Experimental Review on Deep Learning Architectures
+  for Time Series Forecasting.* 2021. arXiv:2103.12057.
+- Benidis et al. *Deep Learning for Time Series Forecasting: Tutorial and Literature
+  Survey.* ACM CSUR 2022. arXiv:2004.13408.
+- Lim & Zohren. *Time-Series Forecasting with Deep Learning: A Survey.* 2021.
+  arXiv:1909.00560.
+- Godahewa et al. *Monash Time Series Forecasting Archive.* 2021. arXiv:2105.06643.
+- *GIFT-Eval: A Benchmark for General Time Series Forecasting Model Evaluation.* 2024.
+
+**Blogs & code**
+- Hugging Face Autoformer blog (the DLinear rebuttal).
+- Repositories: NX-AI/xlstm; yuqinie98/PatchTST; cure-lab/LTSF-Linear.

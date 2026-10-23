@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Debate 002 — Why not x²? Is nonlinearity all we need, and why tanh? · ml-debates</title>
+<title>Debate 002 — Why not x², e^x — or log x? Is nonlinearity all we need, and why tanh? · ml-debates</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -114,6 +114,15 @@
   .endnotes li::before{content:counter(e)"."; position:absolute; left:0; top:0; font-family:var(--mono); font-size:12.5px; color:var(--accent);}
   .endnotes li em{color:var(--text); font-style:italic;}
 
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
   footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
   footer a{color:var(--accent);}
 
@@ -370,6 +379,74 @@
       <li>Chrysos, Moschoglou, Bouritsas, Deng, Panagakis. <em>Deep Polynomial Neural Networks.</em> IEEE TPAMI, 2022.</li>
       <li>Dubey, Singh, Chaudhuri. <em>Activation Functions in Deep Learning: A Comprehensive Survey and Benchmark.</em> arXiv:2109.14545.</li>
     </ol>
+  </section>
+
+  <section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+    <div class="rabbit__group">
+      <h3>Foundations of universal approximation</h3>
+      <ul>
+        <li>Cybenko. <em>Approximation by Superpositions of a Sigmoidal Function.</em> 1989.</li>
+        <li>Hornik. <em>Approximation Capabilities of Multilayer Feedforward Networks.</em> 1991.</li>
+        <li>Leshno, Lin, Pinkus, Schocken. <em>Multilayer Feedforward Networks with a Nonpolynomial Activation Function Can Approximate Any Function.</em> Neural Networks, 1993.</li>
+        <li>Barron. <em>Universal Approximation Bounds for Superpositions of a Sigmoidal Function.</em> 1993.</li>
+        <li>Pinkus. <em>Approximation Theory of the MLP Model in Neural Networks.</em> Acta Numerica, 1999.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Classic activations and their history</h3>
+      <ul>
+        <li>LeCun, Bottou, Orr, M&uuml;ller. <em>Efficient BackProp.</em> 1998.</li>
+        <li>Glorot &amp; Bengio. <em>Understanding the Difficulty of Training Deep Feedforward Neural Networks.</em> AISTATS 2010.</li>
+        <li>Nair &amp; Hinton. <em>Rectified Linear Units Improve Restricted Boltzmann Machines.</em> ICML 2010.</li>
+        <li>Maas, Hannun, Ng. <em>Rectifier Nonlinearities Improve Neural Network Acoustic Models.</em> ICML 2013. (Leaky ReLU.)</li>
+        <li>He et al. <em>Delving Deep into Rectifiers (PReLU).</em> ICCV 2015. arXiv:1502.01852.</li>
+        <li>Clevert, Unterthiner, Hochreiter. <em>ELUs.</em> ICLR 2016. arXiv:1511.07289.</li>
+        <li>Klambauer et al. <em>Self-Normalizing Neural Networks (SELU).</em> NeurIPS 2017. arXiv:1706.02515.</li>
+        <li>Hendrycks &amp; Gimpel. <em>Gaussian Error Linear Units (GELUs).</em> 2016. arXiv:1606.08415.</li>
+        <li>Ramachandran, Zoph, Le. <em>Searching for Activation Functions (Swish).</em> 2017. arXiv:1710.05941.</li>
+        <li>Misra. <em>Mish.</em> BMVC 2020. arXiv:1908.08681.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Polynomial activations, and why they persist</h3>
+      <ul>
+        <li>Garimella, Jha, Reagen. <em>Sisyphus: Low-Degree Polynomial Activations in Privacy-Preserving Deep Learning.</em> 2021. arXiv:2107.12342.</li>
+        <li>Chrysos et al. <em>Deep Polynomial Neural Networks.</em> IEEE TPAMI, 2022.</li>
+        <li>Ismail et al. <em>Polynomial, trigonometric, and tropical activations.</em> 2025. arXiv:2502.01247.</li>
+        <li>Rahman et al. <em>NLReLU.</em> 2019. arXiv:1908.03682.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Periodic activations, Fourier features, and spectral bias</h3>
+      <ul>
+        <li>Sitzmann et al. <em>SIREN: Implicit Neural Representations with Periodic Activation Functions.</em> NeurIPS 2020. arXiv:2006.09661.</li>
+        <li>Tancik et al. <em>Fourier Features Let Networks Learn High Frequency Functions.</em> NeurIPS 2020. arXiv:2006.10739.</li>
+        <li>Rahimi &amp; Recht. <em>Random Features for Large-Scale Kernel Machines.</em> NeurIPS 2007.</li>
+        <li>Rahaman et al. <em>On the Spectral Bias of Neural Networks.</em> ICML 2019. arXiv:1806.08734.</li>
+        <li>Xu et al. <em>Frequency Principle: Fourier Analysis Sheds Light on Deep Neural Networks.</em> 2019. arXiv:1901.06523.</li>
+        <li>Mildenhall et al. <em>NeRF.</em> ECCV 2020. (The positional encoding that made Fourier features famous.)</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Learned and adaptive activations</h3>
+      <ul>
+        <li>Molina, Schramowski, Kersting. <em>Pad&eacute; Activation Units.</em> 2019. arXiv:1901.03892.</li>
+        <li>Agostinelli et al. <em>Learning Activation Functions to Improve Deep Neural Networks.</em> 2014.</li>
+        <li>Apicella et al. <em>A Survey on Modern Trainable Activation Functions.</em> 2020. arXiv:2005.00817.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Surveys</h3>
+      <ul>
+        <li>Dubey, Singh, Chaudhuri. <em>Activation Functions in Deep Learning: A Comprehensive Survey and Benchmark.</em> 2021. arXiv:2109.14545.</li>
+        <li>Apicella et al. <em>Activation Functions in Artificial Neural Networks: A Systematic Overview.</em> 2021. arXiv:2101.09957.</li>
+        <li>Eger, Youssef, Gurevych. <em>Is it Time to Swish?</em> EMNLP 2020. arXiv:1901.02671.</li>
+        <li><em>A Comprehensive Survey of 400 Activation Functions.</em> 2024.</li>
+        <li>Nwankpa et al. <em>Activation Functions: Comparison of Trends in Practice and Research.</em> 2018.</li>
+      </ul>
+    </div>
   </section>
 
 </article>

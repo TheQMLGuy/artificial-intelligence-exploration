@@ -503,6 +503,16 @@
   }
   .endnotes li em{color:var(--text);font-style:italic;}
 
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
+
   footer{
     max-width:var(--maxw);
     margin:0 auto;
@@ -769,6 +779,66 @@
       <li><em>LSTMs and Neural Attention Models for Blood Glucose Prediction.</em> PMC, 2021.</li>
       <li><em>Two Steps Forward and One Behind: Rethinking Time Series Forecasting with Deep Learning</em>, 2023. arXiv:2304.04553.</li>
     </ol>
+  </section>
+
+  <section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+    <div class="rabbit__group">
+      <h3>Foundations</h3>
+      <ul>
+        <li>Hochreiter &amp; Schmidhuber. <em>Long Short-Term Memory.</em> Neural Computation, 1997.</li>
+        <li>Cho et al. <em>Learning Phrase Representations using RNN Encoder-Decoder (GRU).</em> EMNLP 2014. arXiv:1406.1078.</li>
+        <li>Bahdanau, Cho, Bengio. <em>Neural Machine Translation by Jointly Learning to Align and Translate.</em> ICLR 2015. arXiv:1409.0473.</li>
+        <li>Vaswani et al. <em>Attention Is All You Need.</em> NeurIPS 2017. arXiv:1706.03762.</li>
+        <li>Lim et al. <em>Temporal Fusion Transformers for Interpretable Multi-horizon Time Series Forecasting.</em> 2019. arXiv:1912.09363.</li>
+        <li>Salinas et al. <em>DeepAR: Probabilistic Forecasting with Autoregressive Recurrent Networks.</em> 2017. arXiv:1704.04110.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>The forecasting debate</h3>
+      <ul>
+        <li>Zhou et al. <em>Informer: Beyond Efficient Transformer for Long Sequence Time-Series Forecasting.</em> AAAI 2021. arXiv:2012.07436.</li>
+        <li>Wu et al. <em>Autoformer: Decomposition Transformers with Auto-Correlation.</em> NeurIPS 2021. arXiv:2106.13008.</li>
+        <li>Zhou et al. <em>FEDformer: Frequency Enhanced Decomposed Transformer.</em> ICML 2022. arXiv:2201.12740.</li>
+        <li>Nie et al. <em>A Time Series is Worth 64 Words (PatchTST).</em> ICLR 2023. arXiv:2211.14730.</li>
+        <li>Zeng et al. <em>Are Transformers Effective for Time Series Forecasting?</em> AAAI 2023. arXiv:2205.13504. (DLinear.)</li>
+        <li>Oreshkin et al. <em>N-BEATS.</em> ICLR 2020. arXiv:1905.10437.</li>
+        <li>Challu et al. <em>N-HiTS.</em> AAAI 2023. arXiv:2201.12886.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Skeptical / contrarian</h3>
+      <ul>
+        <li>Hugging Face. <em>Yes, Transformers are Effective for Time Series Forecasting (+ Autoformer).</em> 2023. (Rebuttal to DLinear.)</li>
+        <li><em>Two Steps Forward and One Behind: Rethinking Time Series Forecasting with Deep Learning.</em> 2023. arXiv:2304.04553.</li>
+        <li>Elsayed et al. <em>Do We Really Need Deep Learning Models for Time Series Forecasting?</em> 2021. arXiv:2101.02118.</li>
+        <li>Makridakis et al. <em>The M4 Competition.</em> International Journal of Forecasting, 2020.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Modern recurrence (the xLSTM thread)</h3>
+      <ul>
+        <li>Beck et al. <em>xLSTM: Extended Long Short-Term Memory.</em> NeurIPS 2024. arXiv:2405.04517.</li>
+        <li>Beck et al. <em>xLSTM 7B.</em> ICML 2025. arXiv:2503.13427.</li>
+        <li>Alharthi &amp; Mahmood. <em>xLSTMTime.</em> AI (MDPI) 2024. arXiv:2407.10240.</li>
+        <li>Kraus et al. <em>xLSTM-Mixer.</em> NeurIPS 2025. arXiv:2410.16928.</li>
+        <li>Gu, Goel, R&eacute;. <em>S4.</em> ICLR 2022. arXiv:2111.00396.</li>
+        <li>Gu &amp; Dao. <em>Mamba.</em> 2023. arXiv:2312.00752.</li>
+        <li>Peng et al. <em>RWKV.</em> 2023. arXiv:2305.13048.</li>
+        <li>Katharopoulos et al. <em>Transformers are RNNs (Linear Attention).</em> ICML 2020. arXiv:2006.16236.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Surveys &amp; benchmarks</h3>
+      <ul>
+        <li>Hewamalage, Bergmeir, Bandara. <em>An Experimental Review on Deep Learning Architectures for Time Series Forecasting.</em> 2021. arXiv:2103.12057.</li>
+        <li>Benidis et al. <em>Deep Learning for Time Series Forecasting: Tutorial and Literature Survey.</em> ACM CSUR 2022. arXiv:2004.13408.</li>
+        <li>Lim &amp; Zohren. <em>Time-Series Forecasting with Deep Learning: A Survey.</em> 2021. arXiv:1909.00560.</li>
+        <li>Godahewa et al. <em>Monash Time Series Forecasting Archive.</em> 2021. arXiv:2105.06643.</li>
+        <li><em>GIFT-Eval: A Benchmark for General Time Series Forecasting Model Evaluation.</em> 2024.</li>
+      </ul>
+    </div>
   </section>
 
 </article>

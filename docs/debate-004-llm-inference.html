@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate 004 — What is vLLM, the KV cache, and attention? · ml-debates</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-2:#faf7f0; --ink:#221e18; --text:#2b2620; --dim:#6d6357;
+    --rule:rgba(34,30,24,.17); --rule-strong:rgba(34,30,24,.4);
+    --accent:#9a3a24; --accent-2:#395650; --accent-soft:rgba(154,58,36,.08); --mark:rgba(200,168,84,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --display:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+    --maxw:1200px; --measure:680px;
+  }
+  [data-theme="dark"]{
+    --paper:#15120e; --paper-2:#1c1813; --ink:#efe8db; --text:#e5ddce; --dim:#a99e8d;
+    --rule:rgba(239,232,219,.16); --rule-strong:rgba(239,232,219,.34);
+    --accent:#e0906c; --accent-2:#84aaa0; --accent-soft:rgba(224,144,108,.1); --mark:rgba(200,168,84,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background-color:var(--paper);
+    background-image:radial-gradient(ellipse 90% 60% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(120,100,70,.012) 3px, rgba(120,100,70,.012) 4px);
+    color:var(--text); font-family:var(--serif); font-size:19px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; overflow-wrap:break-word;
+  }
+  .masthead{max-width:var(--maxw); margin:0 auto; padding:22px 32px 0;}
+  .masthead__row{display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding-bottom:12px; padding-right:58px; border-bottom:2px solid var(--ink);}
+  .masthead__brand{font-family:var(--display); font-weight:900; font-size:24px; letter-spacing:-.02em; color:var(--ink);}
+  .masthead__brand span{color:var(--accent);}
+  .masthead__tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:right;}
+  .masthead__sub{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); padding:8px 0 0;}
+  .masthead__sub a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule);}
+  .masthead__sub a:hover{color:var(--accent); border-color:var(--accent);}
+
+  .lede{max-width:var(--maxw); margin:0 auto; padding:64px 32px 0;}
+  .lede__inner{max-width:900px;}
+  .kicker{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .kicker::before{content:""; width:34px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-family:var(--display); font-weight:900; font-size:clamp(34px,5.4vw,62px); line-height:1.03; letter-spacing:-.025em; color:var(--ink); margin:0 0 24px; text-wrap:balance;}
+  .deck{font-size:clamp(19px,2vw,23px); line-height:1.5; font-style:italic; color:var(--dim); max-width:48ch; margin:0 0 34px;}
+  .metaline{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); border-top:1px solid var(--rule); padding-top:16px;}
+  .metaline b{color:var(--text); font-weight:500;}
+  .stamp{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1.5px solid var(--accent); border-radius:3px; padding:5px 11px; transform:rotate(-2.2deg); opacity:.92; white-space:nowrap;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:56px 32px 40px;}
+  article{max-width:var(--measure); margin:0 auto; position:relative;}
+  article p{margin:0 0 1.35em;}
+  .lead{font-size:1.1em; line-height:1.62; color:var(--ink);}
+  .lead--drop::first-letter{float:left; font-family:var(--display); font-weight:900; font-size:3.4em; line-height:.8; padding:6px 12px 0 0; color:var(--accent);}
+  h2{font-family:var(--display); font-weight:600; font-size:clamp(25px,3.1vw,33px); line-height:1.12; letter-spacing:-.015em; color:var(--ink); margin:64px 0 20px; position:relative; text-wrap:balance;}
+  h2 .num{position:absolute; left:-3.6rem; top:.15em; font-family:var(--mono); font-size:.62em; font-weight:500; color:var(--accent);}
+  h3{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); margin:40px 0 12px;}
+  strong{color:var(--ink); font-weight:600;}
+  a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px;}
+
+  .framing{border:1px solid var(--rule-strong); background:var(--paper-2); padding:26px 28px 22px; margin:34px 0; position:relative;}
+  .framing__label{position:absolute; top:-11px; left:22px; background:var(--paper); padding:0 10px; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);}
+  .framing p:last-child{margin-bottom:0;}
+  .framing ol{margin:10px 0 0; padding-left:1.4em;}
+  .framing li{margin-bottom:8px;}
+
+  .eq{font-family:var(--mono); font-size:15.5px; line-height:1.9; text-align:center; background:var(--paper-2); border:1px solid var(--rule); border-radius:2px; padding:18px 16px; margin:26px 0; overflow-x:auto; color:var(--ink);}
+  .eq--lead{border-left:3px solid var(--accent);}
+  code{font-family:var(--mono); font-size:.88em; background:var(--accent-soft); color:var(--accent); padding:1px 5px; border-radius:2px;}
+
+  .camps{list-style:none; margin:26px 0 34px; padding:0; counter-reset:camp; border-top:1px solid var(--rule);}
+  .camps li{counter-increment:camp; position:relative; padding:18px 0 18px 58px; border-bottom:1px solid var(--rule); font-size:1.02em;}
+  .camps li::before{content:counter(camp,decimal-leading-zero); position:absolute; left:0; top:16px; font-family:var(--display); font-weight:900; font-size:26px; color:var(--accent); line-height:1;}
+  .camps b{display:block; font-family:var(--display); font-weight:600; font-size:1.06em; letter-spacing:-.01em; color:var(--ink);}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule-strong); background:var(--paper-2); margin:30px 0;}
+  table{border-collapse:collapse; width:100%; min-width:520px; font-size:15px; line-height:1.45;}
+  thead th{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:12px 14px; border-bottom:1.5px solid var(--rule-strong); vertical-align:bottom;}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.prop{font-weight:600; color:var(--ink); width:40%;}
+  td.c{text-align:center; font-family:var(--mono); font-size:13px;}
+  td.win{color:var(--accent-2); font-weight:600;}
+  .tcap{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.04em; margin-top:-18px; margin-bottom:30px; line-height:1.5;}
+
+  .reading{counter-reset:r; list-style:none; padding:0; margin:24px 0 34px;}
+  .reading li{counter-increment:r; position:relative; padding:0 0 20px 46px;}
+  .reading li::before{content:counter(r); position:absolute; left:0; top:1px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); border:1px solid var(--accent); border-radius:50%;}
+
+  .pull{margin:44px 0; padding-left:26px; border-left:3px solid var(--accent);}
+  .pull p{font-family:var(--display); font-weight:400; font-size:clamp(22px,2.6vw,28px); line-height:1.28; letter-spacing:-.01em; color:var(--ink); font-style:italic; margin:0;}
+
+  .forks{list-style:none; padding:0; margin:26px 0 20px;}
+  .forks li{position:relative; padding:16px 0 16px 34px; border-top:1px solid var(--rule);}
+  .forks li:last-child{border-bottom:1px solid var(--rule);}
+  .forks li::before{content:""; position:absolute; left:0; top:20px; width:14px; height:14px; border:1.5px solid var(--accent); border-radius:2px;}
+  .forks .fid{font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent); margin-right:8px;}
+  .forks .q{color:var(--ink); font-weight:500;}
+  .forks .tr{display:block; margin-top:6px; font-size:.9em; color:var(--dim); font-style:italic;}
+
+  .cross{border:1px solid var(--rule-strong); background:var(--paper-2); padding:24px 26px 8px; margin:40px 0; position:relative;}
+  .cross .framing__label{background:var(--paper);}
+  .cross ul{list-style:none; padding:0; margin:0;}
+  .cross li{position:relative; padding:8px 0 12px 22px; font-size:.98em; border-top:1px solid var(--rule);}
+  .cross li:first-child{border-top:none;}
+  .cross li::before{content:"\2014"; position:absolute; left:0; top:8px; color:var(--accent);}
+
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
+
+  footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
+  footer a{color:var(--accent);}
+
+  .toggle{position:fixed; top:16px; right:16px; z-index:50; background:var(--paper-2); border:1px solid var(--rule-strong); border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); transition:color .15s ease, border-color .15s ease;}
+  .toggle:hover{color:var(--accent); border-color:var(--accent);}
+  .toggle svg{width:18px; height:18px;}
+  [data-theme="light"] .toggle__moon{display:none;}
+  [data-theme="dark"] .toggle__sun{display:none;}
+  mark{background:var(--mark); color:inherit; padding:0 3px; border-radius:2px;}
+
+  @media (max-width:640px){ .masthead__tag{display:none;} .masthead__sub span:last-child{display:none;} }
+  @media (max-width:900px){
+    body{font-size:18px;}
+    h1.title{font-size:clamp(30px,8vw,48px);}
+    .masthead,main,.lede,footer{padding-left:22px; padding-right:22px;}
+    h2 .num{position:static; display:block; margin-bottom:6px; font-size:.72em;}
+    .tcap{margin-top:-10px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
+  ::selection{background:var(--accent); color:var(--paper);}
+</style>
+</head>
+<body>
+
+<button class="toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <svg class="toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+
+<header class="masthead">
+  <div class="masthead__row">
+    <div class="masthead__brand">ml&#8209;debates<span>.</span></div>
+    <div class="masthead__tag">Written by AI<br>Directed by a human</div>
+  </div>
+  <div class="masthead__sub">
+    <span><a href="index.html">All debates</a> &middot; Debate 004</span>
+    <span><a href="debate-003-cnn-time-series.html">&larr; Debate 003</a></span>
+  </div>
+</header>
+
+<div class="lede">
+  <div class="lede__inner">
+    <div class="kicker">Debate 004</div>
+    <h1 class="title">What is vLLM, the KV cache, and attention?</h1>
+    <p class="deck">Three topics that are really one chain: the operation, the thing it forces, and the system built to feed it.</p>
+    <div class="metaline">
+      <span>Status: <b>Open</b></span>
+      <span>Draft <b>0.1</b></span>
+      <span>Opened <b>23 Oct 2026</b></span>
+      <span>Editor <b>Divyansh Tripathi</b></span>
+      <span class="stamp">Draft &middot; Not settled</span>
+    </div>
+  </div>
+</div>
+
+<main>
+<article>
+
+  <h2><span class="num">00</span>Framing: one machine, three objects</h2>
+  <p class="lead lead--drop">Asked separately, these three look like three topics. They are one chain. <strong>Attention</strong> is the operation &mdash; a learned retrieval. The <strong>KV cache</strong> is what autoregressive generation forces attention to keep. <strong>vLLM</strong> is the system that manages that cache so the machine can actually be fed.</p>
+  <div class="framing">
+    <span class="framing__label">Each one creates the next</span>
+    <ol>
+      <li>The <strong>operation</strong> creates the cache.</li>
+      <li>The <strong>cache</strong> becomes the bottleneck.</li>
+      <li>The <strong>bottleneck</strong> demands a system.</li>
+    </ol>
+  </div>
+
+  <h2><span class="num">01</span>Attention, minimally</h2>
+  <p>For each token, a self-attention layer projects its hidden state into three vectors: a <strong>query</strong> <code>q = W_q&middot;x</code>, a <strong>key</strong> <code>k = W_k&middot;x</code>, and a <strong>value</strong> <code>v = W_v&middot;x</code>. Then, for each query, it compares against every key and takes a weighted average of the values:</p>
+  <div class="eq eq--lead">a<sub>ij</sub> = softmax( q<sub>i</sub> &middot; k<sub>j</sub> / &radic;d )<br>o<sub>i</sub> = &Sigma;<sub>j</sub> a<sub>ij</sub> &middot; v<sub>j</sub></div>
+  <p>That is the whole operation. Read plainly, it is a <strong>retrieval</strong>: the query is a search term, the keys are an index, and the output is a soft, weighted lookup into the values. Every token asks "which earlier tokens are relevant to me?" and pulls a blend of them.</p>
+  <ul class="camps">
+    <li><b>Compute is quadratic</b> in sequence length &mdash; the score matrix is <em>N &times; N</em>.</li>
+    <li><b>Two phases, opposite bottlenecks.</b> <em>Prefill</em> (the prompt) knows all tokens at once &rarr; matrix&ndash;matrix &rarr; <strong>compute-bound</strong>. <em>Decode</em> (generation) works one token at a time &rarr; matrix&ndash;<em>vector</em> &rarr; <strong>memory-bound</strong>.</li>
+  </ul>
+  <p>That asymmetry is the hinge of the whole chapter.</p>
+
+  <h2><span class="num">02</span>Why the cache exists</h2>
+  <p>Language models generate <strong>autoregressively</strong>: token <em>t</em> depends on all tokens before it. To produce token <em>t+1</em>, the model must attend over the keys and values of tokens <em>1 &hellip; t</em>. Without a cache, every step would recompute the keys and values of the <em>entire</em> prefix &mdash; the same vectors, over and over. Across a generation of <em>n</em> tokens that is <code>O(n&sup2;)</code> redundant work. The <strong>KV cache</strong> fixes it: store the key and value vectors as they are produced, so each step computes only the <em>new</em> token's <code>k</code> and <code>v</code> and attends over the cached ones.</p>
+  <ul class="camps">
+    <li><b>The cache changes nothing about the output.</b> It is memoization, not approximation &mdash; generation with and without it produces <em>identical</em> tokens. It buys speed, never accuracy.</li>
+    <li><b>It moves the cost from compute to memory.</b> Each decode step becomes <code>O(n)</code> in attention (it must <em>read</em> the whole cache) and <code>O(1)</code> in weight matrix products. The redundant compute is gone; what remains is a large, growing tensor read on every step.</li>
+  </ul>
+
+  <h2><span class="num">03</span>The size &mdash; and why it is the bottleneck</h2>
+  <p>The cache's size is simple to write down. For a model with <em>L</em> layers, <em>h</em> key/value heads, head dimension <em>d<sub>h</sub></em>, context length <em>S</em>, in 16-bit:</p>
+  <div class="eq">KV bytes = 2 (keys and values) &times; 2 (bytes) &times; L &times; h &times; d<sub>h</sub> &times; S = 4 &middot; L &middot; h &middot; d<sub>h</sub> &middot; S</div>
+  <p>It grows <strong>linearly in context length and batch size</strong> &mdash; and it is not a rounding error. For <strong>LLaMA-3-70B</strong> (<em>L</em>=80, <em>h</em>=64, <em>d<sub>h</sub></em>=128):</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Context length</th><th>KV cache (MHA)</th><th>With GQA (8 KV heads)</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">4,096 tokens</td><td class="c">&asymp; 10.7 GB</td><td class="c win">&asymp; 1.3 GB</td></tr>
+        <tr><td class="prop">32,768 tokens</td><td class="c">&asymp; 85.9 GB</td><td class="c win">&asymp; 10.7 GB</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tcap">At 32k context the MHA cache alone exceeds the 80&nbsp;GB of an H100. One analysis puts an 8B model at batch 128 and 8,192 tokens at <strong>280&nbsp;GB</strong> of MHA cache &mdash; about 30&times; the model's own weights (69&nbsp;GB with GQA).</p>
+  <p>Now put that against the roofline. A kernel's <strong>arithmetic intensity</strong> &mdash; FLOPs per byte moved &mdash; decides whether it is compute- or memory-bound. On an H100 the <em>ridge point</em> is about <strong>295 FLOP/byte</strong>. Prefill sits well above it. Decode, at small batch, sits at roughly <strong>1 FLOP/byte</strong> &mdash; two to three orders of magnitude below the ridge. The tensor cores idle; measured GPU utilisation during decode can fall to around <strong>7%</strong>.</p>
+  <div class="pull"><p>The cache is not "large in the abstract." Decoding must re-read it every step while doing almost no math &mdash; so the cache's size, not the model's, becomes the binding constraint.</p></div>
+
+  <h2><span class="num">04</span>vLLM: the system that manages it</h2>
+  <p>vLLM is <strong>not</strong> a model, an architecture, or a training method. It is an <strong>inference engine</strong> &mdash; a serving system. Nothing about it changes what the model computes; it changes how fast and how cheaply the model can be <em>run</em>.</p>
+  <p><strong>The problem.</strong> Serving is memory-bound, and the memory is dominated by the KV cache. To keep a request's cache <em>contiguous</em>, prior systems pre-allocated a chunk sized to the request's <strong>maximum</strong> length. Three kinds of waste followed &mdash; slots reserved for future tokens, internal fragmentation, and external fragmentation. The measured result: in prior systems <mark>only 20.4%&ndash;38.2% of KV-cache memory was actually used</mark> to store real token states.</p>
+  <p><strong>The trick &mdash; PagedAttention.</strong> Borrow OS virtual-memory paging: split a request's cache into <strong>fixed-size blocks</strong>; let the blocks be <strong>non-contiguous</strong> in physical memory; and keep a per-request <strong>block table</strong> mapping logical blocks to physical ones &mdash; pages, tokens as bytes, requests as processes.</p>
+  <ul class="camps">
+    <li><b>Near-zero waste.</b> On-demand, uniform-size blocks kill external fragmentation and confine internal waste to the last, partly-filled block &mdash; in practice <strong>under 4%</strong>, against the 60&ndash;80% of the naive scheme.</li>
+    <li><b>Sharing becomes possible.</b> Sequences sharing a prefix can point at the <em>same</em> physical blocks. Parallel sampling saved 6&ndash;10% of memory; beam search, <strong>38&ndash;55%</strong>, and up to 66% on real chat data.</li>
+  </ul>
+  <p>On top sits <strong>continuous batching</strong> (iteration-level scheduling): finished requests are dropped and new ones admitted <strong>every decoding iteration</strong> &mdash; no padding, no head-of-line blocking.</p>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>&nbsp;</th><th>Naive contiguous cache</th><th>PagedAttention</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">KV-cache utilisation</td><td class="c">20.4&ndash;38.2%</td><td class="c win">&gt;96% (waste &lt;4%)</td></tr>
+        <tr><td class="prop">Cross-request sharing</td><td class="c">none</td><td class="c win">block-level</td></tr>
+        <tr><td class="prop">Throughput vs. baseline</td><td class="c">1&times;</td><td class="c win">2&ndash;4&times; (up to 22&times; vs. FT)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="tcap">Model outputs are bit-for-bit unchanged. This is pure systems work.</p>
+
+  <h2><span class="num">05</span>The debates</h2>
+  <p><strong>D1 &mdash; Architecture: share the heads.</strong> Make fewer keys and values to begin with. <em>MHA</em> (standard) has one key/value head per query head. <em>MQA</em> (Shazeer, 2019) uses a single shared key/value head &mdash; the cache shrinks by a factor of <em>h</em>, but quality suffers and the single head must be replicated across devices. <em>GQA</em> (Ainslie et al., 2023) groups queries, each group sharing one key/value head &mdash; recovering most of the quality; now the default in Llama 2 70B / Llama 3, Mistral, Qwen. <em>MLA</em> (DeepSeek) caches a low-rank latent instead. The trade-off is explicit: <strong>quality vs. KV budget vs. parallelizability.</strong></p>
+  <p><strong>D2 &mdash; Management: page it.</strong> PagedAttention does not shrink the cache; it stops <em>wasting</em> it. But is paging <em>necessary</em>? <em>vAttention</em> (2024) argues you can manage the cache dynamically with CUDA's own virtual-memory APIs, without a custom block abstraction.</p>
+  <p><strong>D3 &mdash; Precision: quantize it.</strong> FP8 or INT4 halves or quarters the bytes, and FP8 gives a near-2&times; decode win. But PyTorch found an INT4 GQA cache read <strong>4&times; less data for no latency improvement at all</strong>, because the kernel was less bandwidth-efficient. <strong>Fewer bytes &ne; faster.</strong></p>
+  <p><strong>D4 &mdash; Algorithm: don't materialize it.</strong> A widespread confusion: <strong>FlashAttention does <em>not</em> reduce the KV cache.</strong> It is <em>exact</em> attention that avoids writing the <em>N &times; N</em> score matrix to slow HBM, by tiling into on-chip SRAM. On a GPT-2 attention block, HBM traffic fell <strong>40.3&nbsp;GB &rarr; 4.4&nbsp;GB</strong> and runtime <strong>41.7&nbsp;ms &rarr; 7.3&nbsp;ms</strong>. The cache itself is unchanged.</p>
+  <p><strong>D5 &mdash; Approximation: the road not taken.</strong> Sparse and low-rank attention reduce <em>FLOPs</em> to near-linear, yet many "do not display wall-clock speedup against standard attention, and have not gained wide adoption" &mdash; because they optimised FLOPs and ignored memory I/O. <strong>FLOPs are not time; bytes moved are.</strong></p>
+  <p><strong>D6 &mdash; The landscape.</strong> vLLM is one engine among several: <em>TensorRT-LLM</em> (NVIDIA; often fastest raw latency), <em>TGI</em> (Hugging Face), <em>SGLang</em> (RadixAttention &mdash; <em>prefix</em> reuse, a different axis), <em>LMDeploy</em>. No universal winner; the trade-offs are workload-dependent.</p>
+  <p><strong>D7 &mdash; Is this research?</strong> The vLLM paper appeared at <strong>SOSP</strong>, an operating-systems venue &mdash; not an ML conference. As architecture matures, the bottleneck moves to <em>systems</em>, and the most impactful work stops looking like ML.</p>
+  <p>A systems-level trend sits above all of these: <strong>prefill/decode disaggregation</strong> &mdash; running the compute-bound prefill and the memory-bound decode on <em>different</em> hardware, since they stress opposite resources.</p>
+
+  <h2><span class="num">06</span>What the evidence, read together, suggests</h2>
+  <ol class="reading">
+    <li><strong>The three objects are one chain.</strong> Attention forces the cache; the cache is the bottleneck; vLLM is one answer to it.</li>
+    <li><strong>The cache is exact.</strong> It never changes the output &mdash; only the speed &mdash; and it moves cost from compute to memory.</li>
+    <li><strong>Decode is memory-bandwidth-bound</strong>, and arithmetic intensity is why. This is why <em>batching</em> is the primary lever and why the cache is worth shrinking.</li>
+    <li><strong>The fixes live on different axes</strong> &mdash; architecture, management, precision, algorithm &mdash; and they <strong>compose</strong>. GQA + PagedAttention + FP8 + FlashAttention is a coherent stack, not four rival ideas.</li>
+    <li><strong>FLOPs are not wall-clock.</strong> The approximate-attention story and the INT4 story are the same cautionary tale from opposite directions.</li>
+    <li><strong>vLLM is a memory manager and a scheduler</strong>, not a model. Keeping that boundary clear is most of the answer to "what is vLLM."</li>
+  </ol>
+
+  <div class="cross">
+    <span class="framing__label">Cross-debate notes</span>
+    <ul>
+      <li><strong>Debate 001 (attention vs LSTM)</strong> argued about the <em>architecture</em>; this chapter is about the <em>cost of running</em> it. The first-order variable moved from model choice to memory management.</li>
+      <li><strong>Debate 003 (CNN for time series)</strong> found a component's power is a <em>prior</em>, not a capability. Here the "component" is the allocator: paging's power is not extra compute, it is <em>not wasting</em> memory.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">07</span>Open forks &mdash; your call</h2>
+  <ul class="forks">
+    <li><span class="fid">F1</span><span class="q">Depth of the attention section.</span> Minimal "retrieval," or develop it (multiple heads, positional encoding, causal masking, why &radic;d)?</li>
+    <li><span class="fid">F2</span><span class="q">Which axis to go deep on?</span> Architecture, management, precision, or algorithm?<span class="tr">They are separable; better to do one properly than four shallowly.</span></li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> A small script computing KV-cache size and arithmetic intensity across models, batches and contexts &mdash; and plotting the roofline.</li>
+    <li><span class="fid">F4</span><span class="q">The paging debate.</span> Chase vAttention's "you don't need paging" claim?</li>
+    <li><span class="fid">F5</span><span class="q">The landscape.</span> vLLM alone, or the serving engines as a family?</li>
+    <li><span class="fid">F6</span><span class="q">Deliverable shape.</span> Same as before?</li>
+    <li><span class="fid">F7</span><span class="q">Verdict policy.</span> Same &mdash; does a debate ever get marked <em>settled</em>?</li>
+  </ul>
+
+  <section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+
+    <div class="rabbit__group">
+      <h3>Foundations of attention</h3>
+      <ul>
+        <li>Vaswani et al. <em>Attention Is All You Need.</em> NeurIPS 2017. arXiv:1706.03762.</li>
+        <li>Bahdanau, Cho, Bengio. <em>Neural Machine Translation by Jointly Learning to Align and Translate.</em> ICLR 2015. arXiv:1409.0473. (Attention before Transformers.)</li>
+        <li>Dao, Fu, Ermon, Rudra, R&eacute;. <em>FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness.</em> NeurIPS 2022. arXiv:2205.14135.</li>
+        <li>Dao. <em>FlashAttention-2.</em> 2023. arXiv:2307.08691.</li>
+        <li>Shah et al. <em>FlashAttention-3.</em> 2024. arXiv:2407.08608.</li>
+        <li>Milakov &amp; Gimelshein. <em>Online normalizer calculation for softmax.</em> 2018. arXiv:1805.02867. (The trick that makes tiling exact.)</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The KV cache and the memory wall</h3>
+      <ul>
+        <li>Pope et al. <em>Efficiently Scaling Transformer Inference.</em> MLSys 2023. arXiv:2211.05102.</li>
+        <li>Williams, Waterman, Patterson. <em>Roofline: An Insightful Visual Performance Model.</em> CACM 2009. (Arithmetic intensity and the ridge point.)</li>
+        <li>Shazeer. <em>Fast Transformer Decoding: One Write-Head is All You Need.</em> 2019. arXiv:1911.02150. (MQA.)</li>
+        <li>Ainslie et al. <em>GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints.</em> EMNLP 2023. arXiv:2305.13245.</li>
+        <li>DeepSeek-AI. <em>DeepSeek-V2.</em> 2024. arXiv:2405.04434. (Multi-head Latent Attention.)</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Serving systems</h3>
+      <ul>
+        <li>Kwon et al. <em>Efficient Memory Management for Large Language Model Serving with PagedAttention.</em> SOSP 2023. arXiv:2309.06180. (vLLM.)</li>
+        <li>Yu et al. <em>Orca: A Distributed Serving System for Transformer-Based Generative Models.</em> OSDI 2022. (Iteration-level scheduling; the direct predecessor.)</li>
+        <li>Prabhu et al. <em>vAttention: Dynamic Memory Management for Serving LLMs without PagedAttention.</em> 2024. arXiv:2405.04437.</li>
+        <li>Zheng et al. <em>SGLang: Efficient Execution of Structured Language Model Programs.</em> NeurIPS 2024. arXiv:2312.07104. (RadixAttention.)</li>
+        <li>Aminabadi et al. <em>DeepSpeed-Inference.</em> 2022. arXiv:2207.00032.</li>
+        <li>Sheng et al. <em>FlexGen: High-Throughput Generative Inference with a Single GPU.</em> ICML 2023. arXiv:2303.06865.</li>
+        <li>Agrawal et al. <em>Sarathi: Piggybacking Decodes with Chunked Prefills.</em> 2023. arXiv:2308.16369.</li>
+        <li>Zhong et al. <em>DistServe: Disaggregating Prefill and Decoding.</em> OSDI 2024. arXiv:2401.09670.</li>
+        <li>Patel et al. <em>Splitwise: Efficient Generative LLM Inference Using Phase Splitting.</em> ISCA 2024. arXiv:2311.18677.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Squeezing the cache (beyond paging)</h3>
+      <ul>
+        <li>Hooper et al. <em>KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization.</em> NeurIPS 2024. arXiv:2401.18079.</li>
+        <li>Liu et al. <em>KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache.</em> ICML 2024. arXiv:2402.02750.</li>
+        <li>Zhang et al. <em>H2O: Heavy-Hitter Oracle for Efficient Generative Inference.</em> NeurIPS 2023. arXiv:2306.14048. (Evicting unimportant KV entries.)</li>
+        <li>Xiao et al. <em>Efficient Streaming Language Models with Attention Sinks.</em> ICLR 2024. arXiv:2309.17453. (StreamingLLM.)</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Alternative sequence models (same fight, different ring)</h3>
+      <ul>
+        <li>Gu, Goel, R&eacute;. <em>Efficiently Modeling Long Sequences with Structured State Spaces.</em> ICLR 2022. arXiv:2111.00396. (S4.)</li>
+        <li>Gu &amp; Dao. <em>Mamba: Linear-Time Sequence Modeling with Selective State Spaces.</em> 2023. arXiv:2312.00752.</li>
+        <li>Sun et al. <em>Retentive Network: A Successor to Transformer for LLMs.</em> 2023. arXiv:2307.08621. (RetNet.)</li>
+        <li>Peng et al. <em>RWKV: Reinventing RNNs for the Transformer Era.</em> 2023. arXiv:2305.13048.</li>
+        <li>Katharopoulos et al. <em>Transformers are RNNs: Fast Autoregressive Transformers with Linear Attention.</em> ICML 2020. arXiv:2006.16236.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Approximate attention &mdash; and why it stalled</h3>
+      <ul>
+        <li>Child et al. <em>Generating Long Sequences with Sparse Transformers.</em> 2019. arXiv:1904.10509.</li>
+        <li>Kitaev, Kaiser, Levskaya. <em>Reformer: The Efficient Transformer.</em> ICLR 2020. arXiv:2001.04451.</li>
+        <li>Wang et al. <em>Linformer: Self-Attention with Linear Complexity.</em> 2020. arXiv:2006.04768.</li>
+        <li>Beltagy, Peters, Cohan. <em>Longformer: The Long-Document Transformer.</em> 2020. arXiv:2004.05150.</li>
+        <li>Tay et al. <em>Efficient Transformers: A Survey.</em> ACM Computing Surveys 2022. arXiv:2009.06732.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Speed beyond the cache</h3>
+      <ul>
+        <li>Leviathan, Kalman, Matias. <em>Fast Inference from Transformers via Speculative Decoding.</em> ICML 2023. arXiv:2211.17192.</li>
+        <li>Chen et al. <em>Accelerating Large Language Model Decoding with Speculative Sampling.</em> 2023. arXiv:2302.01318.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Blogs, docs and code</h3>
+      <ul>
+        <li>vLLM project blog: <em>vLLM: Easy, Fast, and Cheap LLM Serving with PagedAttention.</em></li>
+        <li>Hugging Face <em>Text Generation Inference</em> (TGI) documentation.</li>
+        <li>NVIDIA TensorRT-LLM documentation and examples.</li>
+        <li>PyTorch blog: <em>INT4 Decoding GQA CUDA Optimizations for LLM Inference.</em> 2024.</li>
+        <li>Raschka. <em>Grouped-Query Attention (GQA) in Modern LLMs.</em> 2025.</li>
+        <li>Repositories: Dao-AILab <em>flash-attention</em>; <em>vllm-project/vllm</em>; <em>sgl-project/sglang</em>.</li>
+      </ul>
+    </div>
+  </section>
+
+</article>
+</main>
+
+<footer>
+  <span>ml&#8209;debates &middot; Issue 004 &middot; Draft 0.1</span>
+  <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/ml-debates">source on GitHub</a></span>
+</footer>
+
+<script>
+  function toggleTheme(){
+    var el=document.documentElement;
+    el.setAttribute('data-theme', el.getAttribute('data-theme')==='dark'?'light':'dark');
+  }
+</script>
+</body>
+</html>

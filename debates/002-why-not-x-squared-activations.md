@@ -1,4 +1,4 @@
-# Debate 002 — Why not x²? Is nonlinearity all we need, and why tanh?
+# Debate 002 — Why not x², e^x — or log x? Is nonlinearity all we need, and why tanh?
 
 **Status:** open — draft 0.4
 **Opened:** 2026-10-22
@@ -482,3 +482,73 @@ table), or different?
   Networks.* IEEE TPAMI, 2022.
 - Dubey, Singh, Chaudhuri. *Activation Functions in Deep Learning: A Comprehensive
   Survey and Benchmark.* arXiv:2109.14545.
+
+---
+
+## Further down the rabbit hole
+
+Everything below is real, and grouped so you can go as deep as you want.
+
+**Foundations of universal approximation**
+- Cybenko. *Approximation by Superpositions of a Sigmoidal Function.* 1989.
+- Hornik. *Approximation Capabilities of Multilayer Feedforward Networks.* 1991.
+- Leshno, Lin, Pinkus, Schocken. *Multilayer Feedforward Networks with a Nonpolynomial
+  Activation Function Can Approximate Any Function.* Neural Networks, 1993.
+- Barron. *Universal Approximation Bounds for Superpositions of a Sigmoidal Function.*
+  1993.
+- Pinkus. *Approximation Theory of the MLP Model in Neural Networks.* Acta Numerica,
+  1999.
+
+**Classic activations and their history**
+- LeCun, Bottou, Orr, Müller. *Efficient BackProp.* 1998.
+- Glorot & Bengio. *Understanding the Difficulty of Training Deep Feedforward Neural
+  Networks.* AISTATS 2010.
+- Nair & Hinton. *Rectified Linear Units Improve Restricted Boltzmann Machines.*
+  ICML 2010.
+- Maas, Hannun, Ng. *Rectifier Nonlinearities Improve Neural Network Acoustic Models.*
+  ICML 2013. (Leaky ReLU.)
+- He et al. *Delving Deep into Rectifiers (PReLU).* ICCV 2015. arXiv:1502.01852.
+- Clevert, Unterthiner, Hochreiter. *ELUs.* ICLR 2016. arXiv:1511.07289.
+- Klambauer et al. *Self-Normalizing Neural Networks (SELU).* NeurIPS 2017.
+  arXiv:1706.02515.
+- Hendrycks & Gimpel. *Gaussian Error Linear Units (GELUs).* 2016. arXiv:1606.08415.
+- Ramachandran, Zoph, Le. *Searching for Activation Functions (Swish).* 2017.
+  arXiv:1710.05941.
+- Misra. *Mish.* BMVC 2020. arXiv:1908.08681.
+
+**Polynomial activations, and why they persist**
+- Garimella, Jha, Reagen. *Sisyphus: Low-Degree Polynomial Activations in
+  Privacy-Preserving Deep Learning.* 2021. arXiv:2107.12342.
+- Chrysos et al. *Deep Polynomial Neural Networks.* IEEE TPAMI, 2022.
+- Ismail et al. *Polynomial, trigonometric, and tropical activations.* 2025.
+  arXiv:2502.01247.
+- Rahman et al. *NLReLU.* 2019. arXiv:1908.03682.
+
+**Periodic activations, Fourier features, and spectral bias**
+- Sitzmann et al. *SIREN: Implicit Neural Representations with Periodic Activation
+  Functions.* NeurIPS 2020. arXiv:2006.09661.
+- Tancik et al. *Fourier Features Let Networks Learn High Frequency Functions.*
+  NeurIPS 2020. arXiv:2006.10739.
+- Rahimi & Recht. *Random Features for Large-Scale Kernel Machines.* NeurIPS 2007.
+- Rahaman et al. *On the Spectral Bias of Neural Networks.* ICML 2019. arXiv:1806.08734.
+- Xu et al. *Frequency Principle: Fourier Analysis Sheds Light on Deep Neural Networks.*
+  2019. arXiv:1901.06523.
+- Mildenhall et al. *NeRF.* ECCV 2020. (The positional encoding that made Fourier
+  features famous.)
+
+**Learned and adaptive activations**
+- Molina, Schramowski, Kersting. *Padé Activation Units.* 2019. arXiv:1901.03892.
+- Agostinelli et al. *Learning Activation Functions to Improve Deep Neural Networks.*
+  2014.
+- Apicella et al. *A Survey on Modern Trainable Activation Functions.* 2020.
+  arXiv:2005.00817.
+
+**Surveys**
+- Dubey, Singh, Chaudhuri. *Activation Functions in Deep Learning: A Comprehensive
+  Survey and Benchmark.* 2021. arXiv:2109.14545.
+- Apicella et al. *Activation Functions in Artificial Neural Networks: A Systematic
+  Overview.* 2021. arXiv:2101.09957.
+- Eger, Youssef, Gurevych. *Is it Time to Swish?* EMNLP 2020. arXiv:1901.02671.
+- *A Comprehensive Survey of 400 Activation Functions.* 2024.
+- Nwankpa et al. *Activation Functions: Comparison of Trends in Practice and Research.*
+  2018.

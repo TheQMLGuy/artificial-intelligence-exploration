@@ -116,6 +116,15 @@
   .endnotes li::before{content:counter(e)"."; position:absolute; left:0; top:0; font-family:var(--mono); font-size:12.5px; color:var(--accent);}
   .endnotes li em{color:var(--text); font-style:italic;}
 
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
   footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
   footer a{color:var(--accent);}
 
@@ -292,6 +301,59 @@
       <li>Dempster, Petitjean, Webb. <em>ROCKET: Exceptionally fast and accurate time series classification using random convolutional kernels.</em> DMKD, 2020. arXiv:1910.13051.</li>
       <li>Hewamalage, Bergmeir, Bandara. <em>An Experimental Review on Deep Learning Architectures for Time Series Forecasting</em>, 2021. arXiv:2103.12057.</li>
     </ol>
+  </section>
+
+  <section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+    <div class="rabbit__group">
+      <h3>Convolution for sequences</h3>
+      <ul>
+        <li>van den Oord et al. <em>WaveNet: A Generative Model for Raw Audio.</em> 2016. arXiv:1609.03499.</li>
+        <li>Yu &amp; Koltun. <em>Multi-Scale Context Aggregation by Dilated Convolutions.</em> ICLR 2016. arXiv:1511.07122.</li>
+        <li>Lea et al. <em>Temporal Convolutional Networks for Action Segmentation and Detection.</em> 2016.</li>
+        <li>Bai, Kolter, Koltun. <em>An Empirical Evaluation of Generic Convolutional and Recurrent Networks for Sequence Modeling.</em> 2018. arXiv:1803.01271.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Forecasting with convolutions</h3>
+      <ul>
+        <li>Wu et al. <em>TimesNet.</em> ICLR 2023. arXiv:2210.02186.</li>
+        <li>Luo &amp; Wang. <em>ModernTCN.</em> ICLR 2024.</li>
+        <li>Liu et al. <em>SCINet: Time Series Modeling and Forecasting with Sample Convolution and Interaction.</em> NeurIPS 2022. arXiv:2106.09305.</li>
+        <li>Oreshkin et al. <em>N-BEATS.</em> ICLR 2020. arXiv:1905.10437.</li>
+        <li>Hewamalage, Bergmeir, Bandara. <em>An Experimental Review on Deep Learning Architectures for Time Series Forecasting.</em> 2021. arXiv:2103.12057.</li>
+        <li><em>ModernTCN Revisited: A Reproducibility Study with Extended Benchmarks.</em> 2025.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Classification with convolutions</h3>
+      <ul>
+        <li>Wang, Oates, Bailis. <em>Time Series Classification from Scratch with Deep Neural Networks (FCN / ResNet).</em> IJCNN 2017. arXiv:1611.06455.</li>
+        <li>Ismail Fawaz et al. <em>InceptionTime: Finding AlexNet for Time Series Classification.</em> DMKD 2020. arXiv:1909.04939.</li>
+        <li>Dempster, Petitjean, Webb. <em>ROCKET.</em> DMKD 2020. arXiv:1910.13051.</li>
+        <li>Dempster et al. <em>MiniRocket: A Very Fast (Almost) Deterministic Transform.</em> KDD 2021. arXiv:2012.08791.</li>
+        <li>Dempster et al. <em>Hydra: Competing Convolutional Kernels for Fast and Accurate Time Series Classification.</em> DMKD 2023. arXiv:2203.10807.</li>
+        <li>Dau et al. <em>The UCR Time Series Archive.</em> 2018. arXiv:1810.07758.</li>
+        <li>Bagnall et al. <em>The UEA Multivariate Time Series Classification Archive.</em> 2018. arXiv:1811.00075.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Surveys &amp; archives</h3>
+      <ul>
+        <li>Zhao et al. <em>Convolutional Neural Networks for Time Series Classification: A Review.</em> 2017. arXiv:1709.05206.</li>
+        <li>Bagnall et al. <em>The Great Time Series Classification Bake Off.</em> DMKD 2017. arXiv:1602.01711.</li>
+        <li>Ismail Fawaz et al. <em>Deep Learning for Time Series Classification: A Review.</em> DMKD 2019. arXiv:1809.04356.</li>
+        <li>Godahewa et al. <em>Monash Time Series Forecasting Archive.</em> 2021. arXiv:2105.06643.</li>
+        <li>Middlehurst et al. <em>Bake off redux: A Review and Experimental Evaluation of Recent Time Series Classification Algorithms.</em> DMKD 2024.</li>
+      </ul>
+    </div>
+    <div class="rabbit__group">
+      <h3>Code</h3>
+      <ul>
+        <li>Repositories: <em>timeseriesAI/tsai</em>; <em>hfawaz/dl-4-tsc</em>; <em>cure-lab/TimesNet</em>; <em>luo-chen/ModernTCN</em>; <em>angus924/rocket</em>.</li>
+      </ul>
+    </div>
   </section>
 
 </article>
