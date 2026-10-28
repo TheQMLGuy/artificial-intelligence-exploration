@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate 008 — What is deep learning? &middot; artificial intelligence exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-2:#faf7f0; --ink:#221e18; --text:#2b2620; --dim:#6d6357;
+    --rule:rgba(34,30,24,.17); --rule-strong:rgba(34,30,24,.4);
+    --accent:#9a3a24; --accent-2:#395650; --accent-soft:rgba(154,58,36,.08); --mark:rgba(200,168,84,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --display:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+    --maxw:1200px; --measure:680px;
+  }
+  [data-theme="dark"]{
+    --paper:#15120e; --paper-2:#1c1813; --ink:#efe8db; --text:#e5ddce; --dim:#a99e8d;
+    --rule:rgba(239,232,219,.16); --rule-strong:rgba(239,232,219,.34);
+    --accent:#e0906c; --accent-2:#84aaa0; --accent-soft:rgba(224,144,108,.1); --mark:rgba(200,168,84,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background-color:var(--paper);
+    background-image:radial-gradient(ellipse 90% 60% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(120,100,70,.012) 3px, rgba(120,100,70,.012) 4px);
+    color:var(--text); font-family:var(--serif); font-size:19px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; overflow-wrap:break-word;
+  }
+  .masthead{max-width:var(--maxw); margin:0 auto; padding:22px 32px 0;}
+  .masthead__row{display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding-bottom:12px; padding-right:58px; border-bottom:2px solid var(--ink);}
+  .masthead__brand{font-family:var(--display); font-weight:900; font-size:24px; letter-spacing:-.02em; color:var(--ink);}
+  .masthead__brand span{color:var(--accent);}
+  .masthead__tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:right;}
+  .masthead__sub{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); padding:8px 0 0;}
+  .masthead__sub a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule);}
+  .masthead__sub a:hover{color:var(--accent); border-color:var(--accent);}
+
+  .lede{max-width:var(--maxw); margin:0 auto; padding:64px 32px 0;}
+  .lede__inner{max-width:900px;}
+  .kicker{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .kicker::before{content:""; width:34px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-family:var(--display); font-weight:900; font-size:clamp(34px,5.4vw,62px); line-height:1.03; letter-spacing:-.025em; color:var(--ink); margin:0 0 24px; text-wrap:balance;}
+  .deck{font-size:clamp(19px,2vw,23px); line-height:1.5; font-style:italic; color:var(--dim); max-width:48ch; margin:0 0 34px;}
+  .metaline{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); border-top:1px solid var(--rule); padding-top:16px;}
+  .metaline b{color:var(--text); font-weight:500;}
+  .stamp{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1.5px solid var(--accent); border-radius:3px; padding:5px 11px; transform:rotate(-2.2deg); opacity:.92; white-space:nowrap;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:56px 32px 40px;}
+  article{max-width:var(--measure); margin:0 auto; position:relative;}
+  article p{margin:0 0 1.35em;}
+  .lead{font-size:1.1em; line-height:1.62; color:var(--ink);}
+  .lead--drop::first-letter{float:left; font-family:var(--display); font-weight:900; font-size:3.4em; line-height:.8; padding:6px 12px 0 0; color:var(--accent);}
+  h2{font-family:var(--display); font-weight:600; font-size:clamp(25px,3.1vw,33px); line-height:1.12; letter-spacing:-.015em; color:var(--ink); margin:64px 0 20px; position:relative; text-wrap:balance;}
+  h2 .num{position:absolute; left:-3.6rem; top:.15em; font-family:var(--mono); font-size:.62em; font-weight:500; color:var(--accent);}
+  h3{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); margin:40px 0 12px;}
+  strong{color:var(--ink); font-weight:600;}
+  a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px;}
+
+  .framing{border:1px solid var(--rule-strong); background:var(--paper-2); padding:26px 28px 22px; margin:34px 0; position:relative;}
+  .framing__label{position:absolute; top:-11px; left:22px; background:var(--paper); padding:0 10px; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);}
+  .framing p:last-child{margin-bottom:0;}
+  .framing ol{margin:10px 0 0; padding-left:1.4em;}
+  .framing li{margin-bottom:8px;}
+
+  .eq{font-family:var(--mono); font-size:15.5px; line-height:1.9; text-align:center; background:var(--paper-2); border:1px solid var(--rule); border-radius:2px; padding:18px 16px; margin:26px 0; overflow-x:auto; color:var(--ink);}
+  .eq--lead{border-left:3px solid var(--accent);}
+  code{font-family:var(--mono); font-size:.88em; background:var(--accent-soft); color:var(--accent); padding:1px 5px; border-radius:2px;}
+
+  .camps{list-style:none; margin:26px 0 34px; padding:0; counter-reset:camp; border-top:1px solid var(--rule);}
+  .camps li{counter-increment:camp; position:relative; padding:18px 0 18px 58px; border-bottom:1px solid var(--rule); font-size:1.02em;}
+  .camps li::before{content:counter(camp,decimal-leading-zero); position:absolute; left:0; top:16px; font-family:var(--display); font-weight:900; font-size:26px; color:var(--accent); line-height:1;}
+  .camps b{display:block; font-family:var(--display); font-weight:600; font-size:1.06em; letter-spacing:-.01em; color:var(--ink);}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule-strong); background:var(--paper-2); margin:30px 0;}
+  table{border-collapse:collapse; width:100%; min-width:520px; font-size:15px; line-height:1.45;}
+  thead th{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:12px 14px; border-bottom:1.5px solid var(--rule-strong); vertical-align:bottom;}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.prop{font-weight:600; color:var(--ink); width:40%;}
+  td.c{text-align:center; font-family:var(--mono); font-size:13px;}
+  td.win{color:var(--accent-2); font-weight:600;}
+  .tcap{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.04em; margin-top:-18px; margin-bottom:30px; line-height:1.5;}
+
+  .reading{counter-reset:r; list-style:none; padding:0; margin:24px 0 34px;}
+  .reading li{counter-increment:r; position:relative; padding:0 0 20px 46px;}
+  .reading li::before{content:counter(r); position:absolute; left:0; top:1px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); border:1px solid var(--accent); border-radius:50%;}
+
+  .pull{margin:44px 0; padding-left:26px; border-left:3px solid var(--accent);}
+  .pull p{font-family:var(--display); font-weight:400; font-size:clamp(22px,2.6vw,28px); line-height:1.28; letter-spacing:-.01em; color:var(--ink); font-style:italic; margin:0;}
+
+  .forks{list-style:none; padding:0; margin:26px 0 20px;}
+  .forks li{position:relative; padding:16px 0 16px 34px; border-top:1px solid var(--rule);}
+  .forks li:last-child{border-bottom:1px solid var(--rule);}
+  .forks li::before{content:""; position:absolute; left:0; top:20px; width:14px; height:14px; border:1.5px solid var(--accent); border-radius:2px;}
+  .forks .fid{font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent); margin-right:8px;}
+  .forks .q{color:var(--ink); font-weight:500;}
+  .forks .tr{display:block; margin-top:6px; font-size:.9em; color:var(--dim); font-style:italic;}
+
+  .cross{border:1px solid var(--rule-strong); background:var(--paper-2); padding:24px 26px 8px; margin:40px 0; position:relative;}
+  .cross .framing__label{background:var(--paper);}
+  .cross ul{list-style:none; padding:0; margin:0;}
+  .cross li{position:relative; padding:8px 0 12px 22px; font-size:.98em; border-top:1px solid var(--rule);}
+  .cross li:first-child{border-top:none;}
+  .cross li::before{content:"\2014"; position:absolute; left:0; top:8px; color:var(--accent);}
+
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
+
+  footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
+  footer a{color:var(--accent);}
+
+  .toggle{position:fixed; top:16px; right:16px; z-index:50; background:var(--paper-2); border:1px solid var(--rule-strong); border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); transition:color .15s ease, border-color .15s ease;}
+  .toggle:hover{color:var(--accent); border-color:var(--accent);}
+  .toggle svg{width:18px; height:18px;}
+  [data-theme="light"] .toggle__moon{display:none;}
+  [data-theme="dark"] .toggle__sun{display:none;}
+  mark{background:var(--mark); color:inherit; padding:0 3px; border-radius:2px;}
+
+  @media (max-width:640px){ .masthead__tag{display:none;} .masthead__sub span:last-child{display:none;} }
+  @media (max-width:900px){
+    body{font-size:18px;}
+    h1.title{font-size:clamp(30px,8vw,48px);}
+    .masthead,main,.lede,footer{padding-left:22px; padding-right:22px;}
+    h2 .num{position:static; display:block; margin-bottom:6px; font-size:.72em;}
+    .tcap{margin-top:-10px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
+  ::selection{background:var(--accent); color:var(--paper);}
+  .wow{border:1px solid var(--rule-strong); border-left:3px solid var(--accent); background:var(--paper-2); padding:15px 20px 13px; margin:30px 0 34px; font-size:.97em; line-height:1.62;}
+  .wow__label{display:block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  .wow p{margin:0;}
+</style>
+</head>
+<body>
+
+<button class="toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <svg class="toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+
+<header class="masthead">
+  <div class="masthead__row">
+    <div class="masthead__brand">artificial intelligence exploration<span>.</span></div>
+    <div class="masthead__tag">Written by AI<br>Directed by a human</div>
+  </div>
+  <div class="masthead__sub">
+    <span><a href="index.html">All debates</a> &middot; Debate 008</span>
+    <span><a href="debate-007-static-vs-contextual-embeddings.html">&larr; Debate 007</a></span>
+  </div>
+</header>
+
+<div class="lede">
+  <div class="lede__inner">
+    <div class="kicker">Debate 008</div>
+    <h1 class="title">What is deep learning?</h1>
+    <p class="deck">The definition takes a paragraph. Whether the depth is doing the work, or the scale, is the argument that is still open.</p>
+    <div class="metaline">
+      <span>Status: <b>Open</b></span>
+      <span>Draft <b>0.1</b></span>
+      <span>Opened <b>28 Oct 2026</b></span>
+      <span>Editor <b>Divyansh Tripathi</b></span>
+      <span class="stamp">Draft &middot; Not settled</span>
+    </div>
+  </div>
+</div>
+
+<main>
+<article>
+  <h2><span class="num">00</span>Framing: the name describes an architecture, not a capability</h2>
+  <p class="lead lead--drop">The definition is short. Deep learning is machine learning in which the model is a composition of many learned transformations, so that the features are learned rather than designed by hand. A deep network is a stack, each layer computing <code>a^(l) = f(W^(l) a^(l-1) + b^(l))</code>, with every weight fitted by gradient descent on a loss and the gradients obtained by backpropagation.</p>
+  <p>That definition is easy and it is not where the argument is. The question that actually divides people is what is doing the work. Three things are bundled into the phrase and they can be separated. There is a <strong>class of models</strong>, meaning compositions of simple parametric layers. There is a <strong>training regime</strong>, meaning first-order optimisation of a model with far more parameters than data points, on a non-convex objective, using gradients that are only approximately informative. And there is an <strong>empirical phenomenon</strong>, which is that this combination works much better than the theory of the period predicted, on problems where nobody expected it to.</p>
+  <p>The live debate is between two explanations of the phenomenon. One says depth is the thing: composition buys representational efficiency that width cannot match, and that is why the models are structured this way. The other says scale is the thing: given enough data and compute, the architecture barely matters, and depth is one parameter among many rather than the cause. Both have real evidence, and the two are not usually stated in a way that makes them comparable, which is what this chapter tries to fix.</p>
+  <p>There is a third candidate that neither camp emphasises, which is optimisation. Some of the most surprising behaviour appears neither from depth nor from scale but from how long training runs and where it sits on its own curve, and any account that ignores that will misattribute the effect.</p>
+
+  <h2><span class="num">01</span>What the object is, precisely</h2>
+  <p>The mathematical content of a deep network is composition. A linear map followed by a pointwise nonlinearity, repeated, gives a function whose pieces are simple and whose whole is not. The compositional structure is what allows a feature computed early to be reused by every later part of the network that needs it, and reuse is why a deep model can represent some functions with far fewer parameters than a shallow one.</p>
+  <p>Training is gradient descent on a loss, and the enabling fact is that the gradient of a composed function with respect to all of its parameters costs about one extra forward pass. Backpropagation is reverse-mode automatic differentiation, published in its modern form by Rumelhart, Hinton and Williams in 1986, and without that constant-factor cost none of this would be practical. The important thing to notice is that nothing in the loop knows what a feature is. Features are whatever the intermediate layers find useful for reducing the loss, which is the sense in which the representation is learned rather than designed.</p>
+  <p>What the classical theory does and does not give is worth stating, because it is routinely overread. Universal approximation, the Leshno result, guarantees that one sufficiently wide hidden layer can approximate any continuous function to any accuracy. It is a statement about existence. It says nothing about how many units that requires, nothing about whether the parameters are findable by gradient descent, and nothing about generalisation. Every strong claim for depth has to be made against that background, because a single wide layer already has the expressive power in principle.</p>
+
+  <h2><span class="num">02</span>The case that depth is the thing</h2>
+  <p>The strongest form of the case is a separation theorem rather than an intuition. Telgarsky, in 2016, exhibited families of functions that a network of depth <em>k</em> computes with polynomially many units and that require exponentially many units to compute at depth <em>k</em>&minus;1. Eldan and Shamir, in the same year, proved a comparable separation for a different function class. These are statements about representation, not about training, and they are the cleanest available evidence that depth is not merely a convenient way to add parameters.</p>
+  <p>There is a geometric version of the same argument. A rectified network partitions its input space into regions on which it is an affine function, and the number of such regions grows polynomially in width but exponentially in depth. So depth buys a qualitatively different kind of piecewise structure per parameter, which is exactly what a task with hierarchical composition seems to need.</p>
+  <p>The empirical version is the history. Between roughly 2006 and 2012 the field's central difficulty was that deep networks would not train, and the deep belief network chapter is the record of that struggle. When they did start training, the gains were large and they were specifically attributed to depth: adding layers helped in a way that adding width did not, on the same data and the same compute. And the architectural priors that dominate practice are priors about composition. A convolution is a statement that local structure composes; an attention layer is a statement that relations compose. Both are claims that the useful function is built in stages.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>Backpropagation is not a learning rule so much as an accounting trick. Computing the gradient of a loss with respect to every parameter costs roughly the same as computing the loss once, which is the only reason a model with a hundred billion parameters is trainable at all.</p></div>
+
+  <h2><span class="num">03</span>The case that scale is the thing</h2>
+  <p>The opposing case has one slogan and a lot of measurement behind it. Sutton's bitter lesson, in 2019, is the claim that every attempt to build knowledge into a system has eventually been beaten by scaling a general method with more compute, and the history of the field since 2012 is largely consistent with it.</p>
+  <p>The measurements are scaling laws. Kaplan and colleagues, in 2020, found that test loss falls as a power law in model size, dataset size and compute,</p>
+  <div class="eq">L &prop; N<sup>&minus;&alpha;</sup></div>
+  <p>smooth enough across many orders of magnitude to be predictive. Hoffmann and colleagues, in 2022, corrected the allocation and showed that for a fixed compute budget the optimal model and the optimal number of training tokens should be scaled together, at roughly twenty tokens per parameter, which is why models got smaller and trained longer. The striking feature of these results for this debate is what is absent from them: the functional form is in total budget, and the architectural details move the constant rather than the exponent. If loss is a power law in scale, then depth is a hyperparameter inside a regime, not the engine of the regime.</p>
+  <p>There is a second line of evidence, about what overparameterisation is for. Classical statistics says a model with more parameters than data points should overfit, and these models do not. The double-descent curve, from Belkin and colleagues in 2019 and Nakkiran and colleagues in the same year, shows test error rising and then falling again as capacity increases past the interpolation threshold. The lottery-ticket result, from Frankle and Carbin, suggests that a dense network contains small sparse subnetworks that would have trained just as well, which makes capacity look like a search aid rather than a repository of knowledge. On that reading, the thing that matters is having enough room and enough data to find a good small solution, and depth is one way of providing room.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Claim</th><th>What would confirm it</th><th>What the record shows</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">Depth is the cause</td><td>functions that need exponentially many units without it</td><td class="c win">proved: the separation theorems hold</td></tr>
+        <tr><td class="prop">Scale is the cause</td><td>loss predictable from budget alone</td><td class="c win">holds: power laws, architecture moves only the constant</td></tr>
+        <tr><td class="prop">Optimisation is the cause</td><td>behaviour that changes with training time alone</td><td class="c win">holds: grokking arrives after fitting, with nothing else changed</td></tr>
+        <tr><td class="prop">Any of them explains generalisation</td><td>a theory that predicts it from the setup</td><td class="c">not available</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="num">04</span>The third candidate: optimisation, and the time axis</h2>
+  <p>Two observations fit neither camp and are worth keeping in view, because they are the ones that embarrass clean stories.</p>
+  <p>The first is grokking. Power and colleagues, in 2022, trained small networks on algorithmic tasks and found a regime where training accuracy reaches perfection and test accuracy stays at chance for a long time, and then, with no change to the data or the model, generalisation suddenly arrives. Nothing about depth or scale changed at that moment. What changed was how far along its optimisation trajectory the model had travelled. Any account of deep learning that treats generalisation as a property of the architecture has to explain why it can be absent in a perfectly capable model and then appear.</p>
+  <p>The second is the contested status of emergence. Wei and colleagues, in 2022, reported abilities that appear sharply once models pass a certain scale, which was read as evidence for scale as the driver. Schaeffer, Miranda and Koyejo, in 2023, argued that many of those curves are artefacts of the metrics rather than of the models, since a discontinuous-looking jump in an all-or-nothing accuracy score can be a smooth improvement in a continuous underlying quantity. That dispute is not settled, and it matters here, because the sharpest evidence for the scale story rests on the sharpness of those curves.</p>
+
+  <h2><span class="num">05</span>What the word is doing, and what is still open</h2>
+  <p>The honest state of the field is that there is an engineering discipline with very good results and a thin theory, and that the word deep is a statement about composition rather than about understanding. It describes a circuit's shape, not its comprehension.</p>
+  <p>What remains genuinely open is why the training regime generalises at all. There is no accepted theory that explains fitting far more parameters than data points while still generalising, that explains why first-order methods find good solutions in a non-convex landscape, or that predicts which architectural choices will matter at which scale. There are partial accounts, each covering part of the picture, and the field proceeds mostly by measurement.</p>
+  <p>There is also a live question about whether depth will remain the defining word. Mixture-of-experts models make total parameters a poor description of compute. Retrieval and tool use put capability outside the weights. Spending more compute at inference, rather than in the stack, is now a primary axis of progress. In each case the thing that improves is not the depth of the network, and if that continues then deep learning will name a historical period rather than a mechanism.</p>
+
+  <h2><span class="num">06</span>What the evidence, read together, suggests</h2>
+  <p>This is a reading, not a verdict. The editor decides what stands.</p>
+  <p>The definition is not in dispute: composition of learned transformations, trained by gradient descent with backpropagated gradients. What is in dispute is the causal story, and the evidence supports a split verdict that neither camp will enjoy. Depth demonstrably changes what a fixed number of parameters can represent, and the separation theorems are proofs rather than analogies, so the strong scale-only reading is wrong. But the predictive laws that actually guide practice are laws about total budget, and the architectural details enter as constants, so the strong depth-first reading overstates its case. What is missing from both is the optimisation trajectory, which is where grokking lives and where the sharpest anomalies are.</p>
+  <p>The most defensible statement is that deep learning is a regime rather than a mechanism: enough depth to make composition cheap, enough capacity to make the search easy, and enough data and compute to make the power laws bite. The word names the shape of the thing that happened to work, and the explanation for why it worked is still being written.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>Grokking is the cleanest anomaly in the field. A model that has already fitted its training set perfectly sits at chance on the test set for thousands of steps, and then generalises, without any change to its size, its data or its objective.</p></div>
+
+  <div class="cross">
+    <span class="framing__label">Cross-debate notes</span>
+    <ul>
+      <li><strong>Debate 005 (deep belief networks)</strong> is the prehistory of this chapter. The DBN existed because deep networks would not train, and it was displaced not by an argument but by rectified units, dropout, initialisation and data, which is the same claim the scale camp makes now.</li>
+      <li><strong>Debate 002 (activations)</strong> supplies the fact that keeps the depth case honest. Universal approximation already gives one wide layer the power in principle, so every argument for depth has to be about cost or findability rather than about expressiveness in the abstract.</li>
+      <li><strong>Debate 007 (embeddings)</strong> is where the input representation lives, and the same tension appears: the distributional prior is the idea, and the better estimator is what changed.</li>
+      <li><strong>Debate 004 (vLLM and the KV cache)</strong> is the cost side of the same object. Once a model is deep and contextual, inference becomes a memory-bandwidth problem, which is why the systems literature exists at all.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">07</span>Open forks &mdash; your call</h2>
+  <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
+  <ul class="forks">
+    <li><span class="fid">F1</span><span class="q">Is the chapter a definition, a history, or a causal argument?</span><span class="tr">The definition takes a paragraph, and the argument is the chapter.</span></li>
+    <li><span class="fid">F2</span><span class="q">How much mathematics?</span> Keep the layer equation and the separation results as statements, or develop the linear-region count and the scaling-law fits properly?</li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> A small model trained to grokking on modular arithmetic is the cheapest way to see generalisation arrive after fitting.<span class="tr">It would put the strongest anomaly on the page rather than in a citation.</span></li>
+    <li><span class="fid">F4</span><span class="q">Do the scaling laws get their own chapter?</span> They are the most quantitative thing in the field, contested in their extrapolation, and they deserve more than a section.</li>
+    <li><span class="fid">F5</span><span class="q">How much of the theory gap?</span> The generalisation puzzle, the loss-landscape work and the double-descent literature could each double the length.</li>
+    <li><span class="fid">F6</span><span class="q">Verdict policy.</span> Does a chapter whose subject has no accepted theory ever get marked settled?</li>
+    <li><span class="fid">F7</span><span class="q">Deliverable shape.</span> Same as before?</li>
+  </ul>
+
+<section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+
+    <div class="rabbit__group">
+      <h3>The foundations</h3>
+      <ul>
+        <li>Rumelhart, Hinton, Williams. <em>Learning representations by back-propagating errors.</em> Nature 323, 1986.</li>
+        <li>LeCun et al. <em>Gradient-based learning applied to document recognition.</em> IEEE, 1998.</li>
+        <li>Leshno, Lin, Pinkus, Schocken. <em>Multilayer feedforward networks with a nonpolynomial activation function can approximate any function.</em> Neural Networks, 1993.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The depth case</h3>
+      <ul>
+        <li>Telgarsky. <em>Benefits of depth in neural networks.</em> COLT 2016. arXiv:1602.04485.</li>
+        <li>Eldan, Shamir. <em>The power of depth for feedforward neural networks.</em> COLT 2016. arXiv:1512.03965.</li>
+        <li>Montufar, Pascanu, Cho, Bengio. <em>On the number of linear regions of deep neural networks.</em> NIPS 2014.</li>
+        <li>Raghu et al. <em>On the expressive power of deep neural networks.</em> ICML 2017. arXiv:1606.05336.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The scale case</h3>
+      <ul>
+        <li>Kaplan et al. <em>Scaling laws for neural language models.</em> 2020. arXiv:2001.08361.</li>
+        <li>Hoffmann et al. <em>Training compute-optimal large language models.</em> 2022. arXiv:2203.15556.</li>
+        <li>Sutton. <em>The bitter lesson.</em> 2019.</li>
+        <li>Belkin et al. <em>Reconciling modern machine learning practice and the classical bias-variance trade-off.</em> PNAS, 2019.</li>
+        <li>Nakkiran et al. <em>Deep double descent.</em> ICLR 2020. arXiv:1912.02292.</li>
+        <li>Frankle, Carbin. <em>The lottery ticket hypothesis.</em> ICLR 2019. arXiv:1803.03635.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Optimisation and the time axis</h3>
+      <ul>
+        <li>Power et al. <em>Grokking: generalization beyond overfitting on small algorithmic datasets.</em> 2022. arXiv:2201.02177.</li>
+        <li>Wei et al. <em>Emergent abilities of large language models.</em> TMLR 2022. arXiv:2206.07682.</li>
+        <li>Schaeffer, Miranda, Koyejo. <em>Are emergent abilities of large language models a mirage?</em> NeurIPS 2023. arXiv:2304.15004.</li>
+        <li>Nanda et al. <em>Progress measures for grokking via mechanistic interpretability.</em> ICLR 2023. arXiv:2301.05217.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The theory gap</h3>
+      <ul>
+        <li>Zhang et al. <em>Understanding deep learning requires rethinking generalization.</em> ICLR 2017. arXiv:1611.03530.</li>
+        <li>Neyshabur et al. <em>Exploring generalization in deep learning.</em> NIPS 2017. arXiv:1706.08947.</li>
+        <li>Bahri et al. <em>Explaining neural scaling laws.</em> PNAS, 2024. arXiv:2102.06701.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Code</h3>
+      <ul>
+        <li>Any small multilayer perceptron in PyTorch, plus the modular-addition grokking setup from the Nanda et al. replication, which is the cheapest entry point to the anomaly.</li>
+      </ul>
+    </div>
+  </section>
+</article>
+</main>
+
+<footer>
+  <span>artificial intelligence exploration &middot; Issue 008 &middot; Draft 0.1</span>
+  <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/artificial-intelligence-exploration">source on GitHub</a></span>
+</footer>
+
+<script>
+  function toggleTheme(){
+    var el=document.documentElement;
+    el.setAttribute('data-theme', el.getAttribute('data-theme')==='dark'?'light':'dark');
+  }
+</script>
+</body>
+</html>

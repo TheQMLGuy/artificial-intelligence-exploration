@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate 005 — What are deep belief networks? &middot; artificial-intelligence-exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-2:#faf7f0; --ink:#221e18; --text:#2b2620; --dim:#6d6357;
+    --rule:rgba(34,30,24,.17); --rule-strong:rgba(34,30,24,.4);
+    --accent:#9a3a24; --accent-2:#395650; --accent-soft:rgba(154,58,36,.08); --mark:rgba(200,168,84,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --display:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+    --maxw:1200px; --measure:680px;
+  }
+  [data-theme="dark"]{
+    --paper:#15120e; --paper-2:#1c1813; --ink:#efe8db; --text:#e5ddce; --dim:#a99e8d;
+    --rule:rgba(239,232,219,.16); --rule-strong:rgba(239,232,219,.34);
+    --accent:#e0906c; --accent-2:#84aaa0; --accent-soft:rgba(224,144,108,.1); --mark:rgba(200,168,84,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background-color:var(--paper);
+    background-image:radial-gradient(ellipse 90% 60% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(120,100,70,.012) 3px, rgba(120,100,70,.012) 4px);
+    color:var(--text); font-family:var(--serif); font-size:19px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; overflow-wrap:break-word;
+  }
+  .masthead{max-width:var(--maxw); margin:0 auto; padding:22px 32px 0;}
+  .masthead__row{display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding-bottom:12px; padding-right:58px; border-bottom:2px solid var(--ink);}
+  .masthead__brand{font-family:var(--display); font-weight:900; font-size:24px; letter-spacing:-.02em; color:var(--ink);}
+  .masthead__brand span{color:var(--accent);}
+  .masthead__tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:right;}
+  .masthead__sub{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); padding:8px 0 0;}
+  .masthead__sub a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule);}
+  .masthead__sub a:hover{color:var(--accent); border-color:var(--accent);}
+
+  .lede{max-width:var(--maxw); margin:0 auto; padding:64px 32px 0;}
+  .lede__inner{max-width:900px;}
+  .kicker{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .kicker::before{content:""; width:34px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-family:var(--display); font-weight:900; font-size:clamp(34px,5.4vw,62px); line-height:1.03; letter-spacing:-.025em; color:var(--ink); margin:0 0 24px; text-wrap:balance;}
+  .deck{font-size:clamp(19px,2vw,23px); line-height:1.5; font-style:italic; color:var(--dim); max-width:48ch; margin:0 0 34px;}
+  .metaline{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); border-top:1px solid var(--rule); padding-top:16px;}
+  .metaline b{color:var(--text); font-weight:500;}
+  .stamp{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1.5px solid var(--accent); border-radius:3px; padding:5px 11px; transform:rotate(-2.2deg); opacity:.92; white-space:nowrap;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:56px 32px 40px;}
+  article{max-width:var(--measure); margin:0 auto; position:relative;}
+  article p{margin:0 0 1.35em;}
+  .lead{font-size:1.1em; line-height:1.62; color:var(--ink);}
+  .lead--drop::first-letter{float:left; font-family:var(--display); font-weight:900; font-size:3.4em; line-height:.8; padding:6px 12px 0 0; color:var(--accent);}
+  h2{font-family:var(--display); font-weight:600; font-size:clamp(25px,3.1vw,33px); line-height:1.12; letter-spacing:-.015em; color:var(--ink); margin:64px 0 20px; position:relative; text-wrap:balance;}
+  h2 .num{position:absolute; left:-3.6rem; top:.15em; font-family:var(--mono); font-size:.62em; font-weight:500; color:var(--accent);}
+  h3{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); margin:40px 0 12px;}
+  strong{color:var(--ink); font-weight:600;}
+  a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px;}
+
+  .framing{border:1px solid var(--rule-strong); background:var(--paper-2); padding:26px 28px 22px; margin:34px 0; position:relative;}
+  .framing__label{position:absolute; top:-11px; left:22px; background:var(--paper); padding:0 10px; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);}
+  .framing p:last-child{margin-bottom:0;}
+  .framing ol{margin:10px 0 0; padding-left:1.4em;}
+  .framing li{margin-bottom:8px;}
+
+  .eq{font-family:var(--mono); font-size:15.5px; line-height:1.9; text-align:center; background:var(--paper-2); border:1px solid var(--rule); border-radius:2px; padding:18px 16px; margin:26px 0; overflow-x:auto; color:var(--ink);}
+  .eq--lead{border-left:3px solid var(--accent);}
+  code{font-family:var(--mono); font-size:.88em; background:var(--accent-soft); color:var(--accent); padding:1px 5px; border-radius:2px;}
+
+  .camps{list-style:none; margin:26px 0 34px; padding:0; counter-reset:camp; border-top:1px solid var(--rule);}
+  .camps li{counter-increment:camp; position:relative; padding:18px 0 18px 58px; border-bottom:1px solid var(--rule); font-size:1.02em;}
+  .camps li::before{content:counter(camp,decimal-leading-zero); position:absolute; left:0; top:16px; font-family:var(--display); font-weight:900; font-size:26px; color:var(--accent); line-height:1;}
+  .camps b{display:block; font-family:var(--display); font-weight:600; font-size:1.06em; letter-spacing:-.01em; color:var(--ink);}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule-strong); background:var(--paper-2); margin:30px 0;}
+  table{border-collapse:collapse; width:100%; min-width:520px; font-size:15px; line-height:1.45;}
+  thead th{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:12px 14px; border-bottom:1.5px solid var(--rule-strong); vertical-align:bottom;}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.prop{font-weight:600; color:var(--ink); width:40%;}
+  td.c{text-align:center; font-family:var(--mono); font-size:13px;}
+  td.win{color:var(--accent-2); font-weight:600;}
+  .tcap{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.04em; margin-top:-18px; margin-bottom:30px; line-height:1.5;}
+
+  .reading{counter-reset:r; list-style:none; padding:0; margin:24px 0 34px;}
+  .reading li{counter-increment:r; position:relative; padding:0 0 20px 46px;}
+  .reading li::before{content:counter(r); position:absolute; left:0; top:1px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); border:1px solid var(--accent); border-radius:50%;}
+
+  .pull{margin:44px 0; padding-left:26px; border-left:3px solid var(--accent);}
+  .pull p{font-family:var(--display); font-weight:400; font-size:clamp(22px,2.6vw,28px); line-height:1.28; letter-spacing:-.01em; color:var(--ink); font-style:italic; margin:0;}
+
+  .forks{list-style:none; padding:0; margin:26px 0 20px;}
+  .forks li{position:relative; padding:16px 0 16px 34px; border-top:1px solid var(--rule);}
+  .forks li:last-child{border-bottom:1px solid var(--rule);}
+  .forks li::before{content:""; position:absolute; left:0; top:20px; width:14px; height:14px; border:1.5px solid var(--accent); border-radius:2px;}
+  .forks .fid{font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent); margin-right:8px;}
+  .forks .q{color:var(--ink); font-weight:500;}
+  .forks .tr{display:block; margin-top:6px; font-size:.9em; color:var(--dim); font-style:italic;}
+
+  .cross{border:1px solid var(--rule-strong); background:var(--paper-2); padding:24px 26px 8px; margin:40px 0; position:relative;}
+  .cross .framing__label{background:var(--paper);}
+  .cross ul{list-style:none; padding:0; margin:0;}
+  .cross li{position:relative; padding:8px 0 12px 22px; font-size:.98em; border-top:1px solid var(--rule);}
+  .cross li:first-child{border-top:none;}
+  .cross li::before{content:"\2014"; position:absolute; left:0; top:8px; color:var(--accent);}
+
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
+
+  footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
+  footer a{color:var(--accent);}
+
+  .toggle{position:fixed; top:16px; right:16px; z-index:50; background:var(--paper-2); border:1px solid var(--rule-strong); border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); transition:color .15s ease, border-color .15s ease;}
+  .toggle:hover{color:var(--accent); border-color:var(--accent);}
+  .toggle svg{width:18px; height:18px;}
+  [data-theme="light"] .toggle__moon{display:none;}
+  [data-theme="dark"] .toggle__sun{display:none;}
+  mark{background:var(--mark); color:inherit; padding:0 3px; border-radius:2px;}
+
+  @media (max-width:640px){ .masthead__tag{display:none;} .masthead__sub span:last-child{display:none;} }
+  @media (max-width:900px){
+    body{font-size:18px;}
+    h1.title{font-size:clamp(30px,8vw,48px);}
+    .masthead,main,.lede,footer{padding-left:22px; padding-right:22px;}
+    h2 .num{position:static; display:block; margin-bottom:6px; font-size:.72em;}
+    .tcap{margin-top:-10px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
+  ::selection{background:var(--accent); color:var(--paper);}
+  .wow{border:1px solid var(--rule-strong); border-left:3px solid var(--accent); background:var(--paper-2); padding:15px 20px 13px; margin:30px 0 34px; font-size:.97em; line-height:1.62;}
+  .wow__label{display:block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  .wow p{margin:0;}
+</style>
+</head>
+<body>
+
+<button class="toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <svg class="toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+
+<header class="masthead">
+  <div class="masthead__row">
+    <div class="masthead__brand">artificial intelligence exploration<span>.</span></div>
+    <div class="masthead__tag">Written by AI<br>Directed by a human</div>
+  </div>
+  <div class="masthead__sub">
+    <span><a href="index.html">All debates</a> &middot; Debate 005</span>
+    <span><a href="debate-004-llm-inference.html">&larr; Debate 004</a> &middot; <a href="debate-006-neural-radiance-fields.html">Next: Debate 006 &rarr;</a></span>
+  </div>
+</header>
+
+<div class="lede">
+  <div class="lede__inner">
+    <div class="kicker">Debate 005</div>
+    <h1 class="title">What are deep belief networks?</h1>
+    <p class="deck">A model, a training algorithm and a moment in the field, all sharing one name, and only one of them still exists.</p>
+    <div class="metaline">
+      <span>Status: <b>Open</b></span>
+      <span>Draft <b>0.1</b></span>
+      <span>Opened <b>28 Oct 2026</b></span>
+      <span>Editor <b>Divyansh Tripathi</b></span>
+      <span class="stamp">Draft &middot; Not settled</span>
+    </div>
+  </div>
+</div>
+
+<main>
+<article>
+  <h2><span class="num">00</span>Framing: the name covers three things at once</h2>
+  <p class="lead lead--drop">The question sounds like it wants a definition, and the honest answer is that &ldquo;deep belief network&rdquo; names three things which are not the same age and did not have the same fate. It names a model: a stack of layers in which the top is undirected and the rest are directed, so the whole object is a generative model of the data. It names a training algorithm: greedy layer-wise unsupervised pretraining, one layer at a time, followed by a discriminative fine-tune. And it names a moment, roughly 2006 to 2012, when that algorithm was the only known way to train a network with more than two hidden layers, and the field turned back toward depth because of it.</p>
+  <p>Keeping those three apart is most of the answer. The model is close to extinct in practice. The algorithm is extinct as a training method and alive as an idea. The moment is over, and what ended it was not a refutation but a set of simpler ingredients arriving one after another.</p>
+  <p>There is a second framing choice, which is whether the question is historical or technical. Read historically it asks why anyone built these. Read technically it asks whether a stack of restricted Boltzmann machines is still a reasonable thing to describe the world with. The two readings give different verdicts, and the chapter keeps both open rather than picking one.</p>
+
+  <h2><span class="num">01</span>What the model actually is</h2>
+  <p>A restricted Boltzmann machine is the unit of construction. It has a visible layer and a hidden layer, no connections within either layer, and a joint energy</p>
+  <div class="eq eq--lead">E(v, h) = &minus; b&middot;v &minus; c&middot;h &minus; v&middot;W&middot;h</div>
+  <p>so that the probability of a configuration is the exponential of the negative energy divided by a normalising constant <em>Z</em>, which is a sum over every possible pair of visible and hidden vectors and is therefore intractable for any interesting size. Because the bipartite structure makes the hidden units independent given the visible ones and the other way round, the conditional distributions factorise,</p>
+  <div class="eq">P(h<sub>j</sub> = 1 | v) = &sigma;( c<sub>j</sub> + &Sigma;<sub>i</sub> v<sub>i</sub> W<sub>ij</sub> )</div>
+  <p>and Gibbs sampling alternates between the two layers cheaply. That factorisation is the whole reason the machine is called restricted.</p>
+  <p>A deep belief network stacks these. In the version Hinton, Osindero and Teh published in 2006, the top two layers are kept as an undirected RBM, and the layers below are directed, each one generating the one beneath it. So a DBN is not a deep Boltzmann machine, which is undirected throughout and much harder to train, and it is not a stack of independent RBMs either. It is a hybrid in which one part is a Boltzmann machine and the rest is a sigmoid belief network, the directed model Neal had written about in 1992.</p>
+  <p>The consequence is a specific and slightly awkward generative procedure. To sample from a DBN you run Gibbs sampling inside the top RBM until it is roughly at equilibrium, then make a single ancestral pass downward through the directed layers. Only the top is sampled properly. Everything below is a feed-forward draw from a conditional. That asymmetry is not a detail, because it is what makes training tractable and what makes the model a compromise rather than a clean generative object.</p>
+
+  <h2><span class="num">02</span>Why anyone built one: the training problem of 2005</h2>
+  <p>To see the point of the thing you have to remember what deep networks could not do. Before rectified units, before dropout, before Xavier or He initialisation, before GPUs were standard, before datasets were large, a network with three or more hidden layers trained by backpropagation from random initialisation generally did worse than a shallow one. The gradients through the lower layers were small and unstructured, the loss surface was bad, and the practical advice of the period was to stay shallow.</p>
+  <p>Greedy layer-wise pretraining attacked this directly. Train the first RBM on the data. Take its hidden activations, treat them as the visible layer of a second RBM, train that. Continue upward. Each layer is trained on a representation produced by the layer below, which means each layer sees a distribution it was actually fitted to rather than a random projection, and no gradient has to travel through more than one layer at a time. The whole stack is then unrolled and fine-tuned by ordinary backpropagation, which by then starts from a point that is already sensible.</p>
+  <p>Training a single RBM in that loop needs a gradient, and the exact one needs the intractable normaliser. Contrastive divergence, in the practical form Hinton gave it in 2002, replaces the model expectation with a short Gibbs chain started from the data, sometimes a single step. It is biased, it is not the gradient of any function anyone has written down, and it worked well enough that a generation of models was built on it.</p>
+  <p>So the algorithm has three moving parts, and they are separable: the layer-wise schedule, the unsupervised objective, and the short-chain gradient estimate. Arguments about DBNs usually confuse them, because the evidence does not treat them equally.</p>
+
+  <h2><span class="num">03</span>The case that this was a real advance</h2>
+  <p>The 2006 paper was not a small result, and the strongest version of the case is straightforward. It reported a network of 784-500-500-2000-10 trained on MNIST with pretraining and fine-tuning reaching about 1.25 per cent test error, which was better than the backpropagation-trained networks of the time, and it did so with an algorithm that scaled to depths nobody had trained before. Within a couple of years the same recipe was producing competitive results on several benchmarks, and the Science paper of the same year on deep autoencoders showed that the layer-wise idea transferred beyond classification, reducing high-dimensional data to low-dimensional codes better than principal components.</p>
+  <p>The historical claim is stronger than any individual number. Between roughly 2006 and 2012 the mainstream position moved from &ldquo;deep networks do not train&rdquo; to &ldquo;deep networks are the right tool&rdquo;, and the DBN literature is a large part of why. It kept the idea of depth alive through the years when the empirical case for it was weak, and it produced the intellectual infrastructure, meaning the unsupervised objectives, the sampling estimators and the habit of thinking about representations rather than only about labels, that the next generation used.</p>
+  <p>There is also a version of the case which is about generative modelling specifically. A DBN is a model of the data distribution, not of a label, so it can in principle be trained on unlabelled data and then adapted. That is the same ambition as the modern generative line, and in that sense the DBN was early rather than wrong.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>Contrastive divergence is not a gradient of anything. It is a difference of two expectations that resembles a gradient, it is biased, and it was the workhorse of an entire field for a decade. Nobody could prove it was right, and it trained models that worked.</p></div>
+
+  <h2><span class="num">04</span>The case that it was scaffolding</h2>
+  <p>The counter-case is that the DBN was a workaround for problems that were about to be solved by other means, and that its own explanation of its success turned out to be wrong.</p>
+  <p>The decisive experiments are about why pretraining helped. Bengio and colleagues, in the greedy layer-wise study of 2007, found that with better architectures and better initialisation the advantage of layer-wise pretraining largely disappeared for shallow networks and narrowed even for deep ones. Erhan and colleagues, in the 2010 study whose title is the question, tested the competing explanations and concluded that unsupervised pretraining was functioning mainly as a regulariser and as a better initialisation, not primarily as a way of learning better features. Supervised pretraining gave much of the same benefit, which is hard to reconcile with the story that unsupervised feature learning was the mechanism. If the benefit is initialisation and regularisation, then any good initialisation and any good regulariser should substitute for it, and within two years they did.</p>
+  <p>The substitutes arrived quickly. Rectified linear units, in 2010, removed the saturation that had made deep sigmoid stacks hard to optimise. Dropout, in 2012, provided regularisation that needed no pretraining at all. Careful initialisation schemes did the same for the early part of training. Then AlexNet, also in 2012, trained a deep convolutional network on two GPUs with a large labelled dataset and beat everything, with no layer-wise pretraining anywhere in it. After that the DBN vanished from practice almost completely, which is the strongest single piece of evidence in the whole debate, because it is not an argument about mechanism but a change in what people actually built.</p>
+  <p>There are further technical objections. The model's likelihood is intractable, so it cannot be evaluated honestly without something like annealed importance sampling, and when it is evaluated that way the numbers are unimpressive next to what came later. Its samples are poor compared with what a generative adversarial network or a diffusion model produces. Contrastive divergence is biased and the bias is not small. And the hybrid structure, undirected at the top and directed below, buys trainability at the cost of being awkward to sample from and awkward to reason about.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Part</th><th>What it was</th><th>What happened to it</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">The model</td><td>RBM stack, undirected at the top, directed below</td><td class="c">superseded, no longer deployed</td></tr>
+        <tr><td class="prop">The layer-wise schedule</td><td>greedy pretraining, one layer at a time</td><td class="c win">dead as a method, alive as an idea</td></tr>
+        <tr><td class="prop">Contrastive divergence</td><td>a short Gibbs chain started from the data</td><td class="c">died with the machines</td></tr>
+        <tr><td class="prop">The generative ambition</td><td>fit a deep model of the data, not of a label</td><td class="c win">moved to VAEs, GANs, diffusion</td></tr>
+        <tr><td class="prop">The explanation</td><td>it learns better unsupervised features</td><td class="c">wrong: it was initialisation and regularisation</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="num">05</span>What died, and what did not</h2>
+  <p>It is worth separating the parts by what happened to them rather than by what was claimed at the time.</p>
+  <p>The layer-wise schedule died as a training method and survives as a research idea. Training a network one block of layers at a time, then stacking and continuing, reappears whenever depth becomes the obstacle, including in recent work on scaling the depth of language models, where progressive stacking is used to avoid paying for a deep model's early training. The motivation is identical to the 2006 motivation: do not ask gradients to travel through a depth that they cannot yet traverse.</p>
+  <p>Contrastive divergence died with the machines. The idea of replacing an intractable model expectation with a short chain from the data survived in a different form, and the modern energy-based and score-based lines are recognisably its descendants.</p>
+  <p>The generative ambition did not die at all. It moved to variational autoencoders, then to adversarial training, then to diffusion, and the modern objective is still a likelihood or a bound on one, over a model with a deep hierarchy of latents. A DBN and a diffusion model are both answering the question of how to fit a deep generative model without an intractable normaliser, and the answers are different in every technical respect while being the same in the shape of the problem.</p>
+  <p>The model itself is essentially a museum piece. Nobody deploys a deep belief network in 2026, and the honest reason is not that it was refuted but that it was superseded, which is a different and less dramatic kind of ending.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>The deep belief network is named for a belief network it only partly is. Its bottom layers are a sigmoid belief network and its top is a Boltzmann machine, so the name describes the part that was already old rather than the part that was new.</p></div>
+
+  <h2><span class="num">06</span>What the evidence, read together, suggests</h2>
+  <p>This is a reading, not a verdict. The editor decides what stands.</p>
+  <p>The technical answer to the question is short. A deep belief network is a generative model built by stacking restricted Boltzmann machines, undirected at the top and directed below, trained greedily one layer at a time with a short-chain gradient estimate and then fine-tuned discriminatively. The historical answer is that it was the bridge between the shallow era and the deep era, and that its own explanation of why it worked was wrong in an interesting way: it believed it was learning better features and it was mostly providing a better starting point.</p>
+  <p>The most useful thing the debate produces is the distinction itself. A training trick that works is not automatically evidence for the theory that motivated it, and the DBN is one of the cleanest cases in the field where a method was right, its explanation was wrong, and the difference was only settled by ablation several years later. That pattern recurs, and recognising it is worth more than knowing what a restricted Boltzmann machine is.</p>
+
+  <div class="cross">
+    <span class="framing__label">Cross-debate notes</span>
+    <ul>
+      <li><strong>Debate 002 (activations)</strong> asked what an activation function has to do, and the answer here is partly a historical accident: the saturation of sigmoid and tanh units is one of the reasons deep stacks did not train, and the rectified unit that replaced them in 2010 is what made pretraining unnecessary.</li>
+      <li><strong>Debate 001 (recurrence vs attention)</strong> shows the same pattern, where a technique is adopted for one reason and survives for another.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">07</span>Open forks &mdash; your call</h2>
+  <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
+  <ul class="forks">
+    <li><span class="fid">F1</span><span class="q">Which of the three things is the chapter about?</span> The model, the training algorithm, or the historical moment?<span class="tr">They need different depths and different evidence.</span></li>
+    <li><span class="fid">F2</span><span class="q">How much of the mathematics?</span> Keep the energy function and the contrastive divergence sketch as they are, or develop the partition function, the log-likelihood gradient and the bias of the short chain properly?</li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> A small RBM stack, pretrained layer-wise and then fine-tuned, against the same network from random initialisation with modern initialisation and rectified units.<span class="tr">It would reproduce the 2010 ablation at small scale and make the point empirical rather than reported.</span></li>
+    <li><span class="fid">F4</span><span class="q">Do the modern descendants get their own treatment?</span> Boltzmann machines and energy-based models are a live research line again, and the relation to diffusion is not trivial.</li>
+    <li><span class="fid">F5</span><span class="q">Verdict policy.</span> Does a largely historical chapter get marked settled once the history is agreed, or does it stay open because the technical question is still live?</li>
+    <li><span class="fid">F6</span><span class="q">Deliverable shape.</span> Same as before?</li>
+  </ul>
+
+<section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+
+    <div class="rabbit__group">
+      <h3>The original papers</h3>
+      <ul>
+        <li>Hinton, Osindero, Teh. <em>A fast learning algorithm for deep belief nets.</em> Neural Computation 18(7):1527-1554, 2006.</li>
+        <li>Hinton, Salakhutdinov. <em>Reducing the dimensionality of data with neural networks.</em> Science 313(5786), 2006.</li>
+        <li>Hinton. <em>Training products of experts by minimizing contrastive divergence.</em> Neural Computation 14(8), 2002.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The ablations that ended it</h3>
+      <ul>
+        <li>Bengio, Lamblin, Popovici, Larochelle. <em>Greedy layer-wise training of deep networks.</em> NIPS 2006.</li>
+        <li>Erhan et al. <em>Why does unsupervised pre-training help deep learning?</em> JMLR 11:625-660, 2010.</li>
+        <li>Larochelle et al. <em>Exploring strategies for training deep neural networks.</em> JMLR 10, 2009.</li>
+        <li>Nair, Hinton. <em>Rectified linear units improve restricted Boltzmann machines.</em> ICML 2010.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Boltzmann machines and energy-based models</h3>
+      <ul>
+        <li>Ackley, Hinton, Sejnowski. <em>A learning algorithm for Boltzmann machines.</em> Cognitive Science, 1985.</li>
+        <li>Smolensky. <em>Information processing in dynamical systems: foundations of harmony theory.</em> 1986. (The restricted Boltzmann machine, under its first name.)</li>
+        <li>Salakhutdinov, Hinton. <em>Deep Boltzmann machines.</em> AISTATS 2009.</li>
+        <li>Salakhutdinov, Murray. <em>On the quantitative analysis of deep belief networks.</em> ICML 2008. (Annealed importance sampling for the intractable likelihood.)</li>
+        <li>LeCun et al. <em>A tutorial on energy-based learning.</em> 2006.</li>
+        <li>Du, Mordatch. <em>Implicit generation and modeling with energy based models.</em> NeurIPS 2019.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The modern descendants</h3>
+      <ul>
+        <li>Kingma, Welling. <em>Auto-encoding variational Bayes.</em> ICLR 2014. arXiv:1312.6114.</li>
+        <li>Ho, Jain, Abbeel. <em>Denoising diffusion probabilistic models.</em> NeurIPS 2020. arXiv:2006.11239.</li>
+        <li>Song, Ermon. <em>Generative modeling by estimating gradients of the data distribution.</em> NeurIPS 2019. arXiv:1907.05600.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Code and tutorials</h3>
+      <ul>
+        <li>Hinton's practical guide to training restricted Boltzmann machines, and his Coursera lectures on the topic.</li>
+        <li>The <code>scikit-learn</code> BernoulliRBM implementation, and the many small RBM implementations in teaching repositories.</li>
+      </ul>
+    </div>
+  </section>
+</article>
+</main>
+
+<footer>
+  <span>artificial intelligence exploration &middot; Issue 005 &middot; Draft 0.1</span>
+  <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/artificial-intelligence-exploration">source on GitHub</a></span>
+</footer>
+
+<script>
+  function toggleTheme(){
+    var el=document.documentElement;
+    el.setAttribute('data-theme', el.getAttribute('data-theme')==='dark'?'light':'dark');
+  }
+</script>
+</body>
+</html>

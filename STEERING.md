@@ -14,7 +14,7 @@ Anything not yet decided stays **open** until the editor rules on it.
 
 | Date | Decision | Notes |
 |------|----------|-------|
-| 2026-10-22 | Project created as `ml-debates`; written-artifact style, not code. | First debate: attention-augmented RNNs vs. LSTMs for time series. |
+| 2026-10-22 | Project created as `artificial-intelligence-exploration`; written-artifact style, not code. | First debate: attention-augmented RNNs vs. LSTMs for time series. |
 | 2026-10-22 | Debate 001 opened (draft 0.1). | Framing corrected: LSTM is itself an RNN, so the axis is three-way. |
 | 2026-10-22 | Debate 001 bumped to draft 0.2: added the xLSTM case. | Axis widened to four-way (added "modern recurrence"). New fork F7 added. |
 | 2026-10-22 | Debate 002 opened (draft 0.1). | "Why not x² / is nonlinearity all we need / why tanh vs trig." Six open forks. |
@@ -29,8 +29,53 @@ Anything not yet decided stays **open** until the editor rules on it.
 | 2026-10-23 | Added "Further down the rabbit hole" reference sections to every chapter. | Categorized, annotated further-reading lists (papers, surveys, code) so each chapter can be read as a rabbit hole. |
 | 2026-10-23 | Added "Tangent" asides throughout every chapter's *body* (editor request: rabbit-hole type overall, not just a reference section). | Verifiable surprise facts woven into the prose — LSTM had no forget gate until 2000; ReLU dates to 1969; GQA is mean-pooled + 5% uptraining; a 70B KV cache exceeds H100 memory; random-kernel ROCKET beats deep nets; etc. |
 | 2026-10-23 | Full language pass on every chapter (editor: "the language is too AI-ish"). | Removed the AI tells: em-dashes, bold sentence-leads, punchy one-line paragraphs, "not X but Y" reveals, rhetorical questions. Rewritten as flowing prose. Facts, structure, tables and references unchanged. |
+| 2026-10-28 | Site draft badges corrected to match the sources. | The 2026-10-23 language pass bumped every chapter without regenerating its page; 001 to 0.3, 002 to 0.5, 003 to 0.2, 004 to 0.2, both labels per page. |
+| 2026-10-28 | Debate 005 opened (draft 0.1): what are deep belief networks? | The model, the training algorithm and the historical moment kept apart, because only one of the three still exists. Six open forks. |
+| 2026-10-28 | Debate 006 opened (draft 0.1): what are neural radiance fields? | The representation, the renderer and the training signal kept apart. Seven open forks. |
+| 2026-10-28 | Project renamed from `ml-debates` to `artificial intelligence exploration`. | Repository, site wordmark, running heads, README and the Brain entry renamed together; the old repository URL redirects. |
+| 2026-10-28 | Debate 007 opened (draft 0.1): static vs contextual embeddings. | The unit (word type against token), the mechanism (recurrent against transformer) and frozenness kept apart, because they are three different questions. Seven open forks. |
+| 2026-10-28 | Debate 008 opened (draft 0.1): what is deep learning? | The definition is one paragraph; the chapter is the causal argument between depth, scale and optimisation. Seven open forks. |
 
 ## Open decisions (awaiting the editor)
+
+From Debate 008, Section 07:
+
+- [ ] **D8-F1** — Definition, history, or causal argument?
+- [ ] **D8-F2** — How much mathematics (linear-region count, scaling-law fits)?
+- [ ] **D8-F3** — Run the grokking experiment on modular arithmetic?
+- [ ] **D8-F4** — Do the scaling laws get their own chapter?
+- [ ] **D8-F5** — How much of the theory gap (generalisation, loss landscapes, double descent)?
+- [ ] **D8-F6** — Verdict policy when there is no accepted theory?
+- [ ] **D8-F7** — Deliverable shape?
+
+From Debate 007, Section 07:
+
+- [ ] **D7-F1** — History, technical comparison, or decision guide?
+- [ ] **D7-F2** — How much mathematics (negative sampling, GloVe loss, the linear reduction)?
+- [ ] **D7-F3** — Run the word2vec / contextual / linear-projection experiment?
+- [ ] **D7-F4** — Does the retrieval side (sentence embeddings, contrastive training) get its own treatment?
+- [ ] **D7-F5** — How much of the anisotropy and rogue-dimension literature?
+- [ ] **D7-F6** — Verdict policy when there is a clear practical winner?
+- [ ] **D7-F7** — Deliverable shape?
+
+From Debate 006, Section 06:
+
+- [ ] **D6-F1** — Which is the chapter about: the model, the rendering formulation, or the task?
+- [ ] **D6-F2** — How much of the mathematics (quadrature, transmittance recursion, sampling weights)?
+- [ ] **D6-F3** — Run the tiny NeRF / encoding ablation?
+- [ ] **D6-F4** — Does Gaussian splatting get its own chapter?
+- [ ] **D6-F5** — How far into the applied territory (robotics, driving, street scale)?
+- [ ] **D6-F6** — Verdict policy?
+- [ ] **D6-F7** — Deliverable shape?
+
+From Debate 005, Section 07:
+
+- [ ] **D5-F1** — Which of the three things is the chapter about: model, algorithm, or moment?
+- [ ] **D5-F2** — How much of the mathematics (partition function, log-likelihood gradient, CD bias)?
+- [ ] **D5-F3** — Run the layer-wise pretraining ablation at small scale?
+- [ ] **D5-F4** — Do the modern descendants (EBMs, diffusion) get their own treatment?
+- [ ] **D5-F5** — Verdict policy for a largely historical chapter?
+- [ ] **D5-F6** — Deliverable shape?
 
 From Debate 004, Section 07 (merged vLLM + KV cache + attention):
 

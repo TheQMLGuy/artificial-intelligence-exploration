@@ -1,6 +1,6 @@
-# ml-debates
+# artificial intelligence exploration
 
-A living archive of written debates on machine learning. The writing is done by an
+A living archive of written debates on artificial intelligence. The writing is done by an
 AI assistant; the direction, scope, and verdicts are set by the human editor.
 
 ## How this works
@@ -38,6 +38,10 @@ the editor says so; every artifact carries a status line and a draft number.
 | 002 | Why not x², e^x — or log x? Is nonlinearity all we need, and why tanh? | open — draft 0.5 |
 | 003 | Can a CNN do time series? Why, and how well? | open — draft 0.2 |
 | 004 | What is vLLM, the KV cache, and attention? | open — draft 0.2 |
+| 005 | What are deep belief networks? | open — draft 0.1 |
+| 006 | What are neural radiance fields? | open — draft 0.1 |
+| 007 | Static vs contextual embeddings | open — draft 0.1 |
+| 008 | What is deep learning? | open — draft 0.1 |
 
 ## Files
 
