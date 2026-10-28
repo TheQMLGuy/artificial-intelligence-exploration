@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Debate 007 — Static vs contextual embeddings &middot; artificial intelligence exploration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f3efe6; --paper-2:#faf7f0; --ink:#221e18; --text:#2b2620; --dim:#6d6357;
+    --rule:rgba(34,30,24,.17); --rule-strong:rgba(34,30,24,.4);
+    --accent:#9a3a24; --accent-2:#395650; --accent-soft:rgba(154,58,36,.08); --mark:rgba(200,168,84,.28);
+    --serif:"Newsreader",Georgia,"Times New Roman",serif;
+    --display:"Fraunces",Georgia,serif;
+    --mono:"IBM Plex Mono","SF Mono",Consolas,monospace;
+    --maxw:1200px; --measure:680px;
+  }
+  [data-theme="dark"]{
+    --paper:#15120e; --paper-2:#1c1813; --ink:#efe8db; --text:#e5ddce; --dim:#a99e8d;
+    --rule:rgba(239,232,219,.16); --rule-strong:rgba(239,232,219,.34);
+    --accent:#e0906c; --accent-2:#84aaa0; --accent-soft:rgba(224,144,108,.1); --mark:rgba(200,168,84,.22);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background-color:var(--paper);
+    background-image:radial-gradient(ellipse 90% 60% at 50% -10%, var(--accent-soft) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(120,100,70,.012) 3px, rgba(120,100,70,.012) 4px);
+    color:var(--text); font-family:var(--serif); font-size:19px; line-height:1.72;
+    -webkit-font-smoothing:antialiased; overflow-wrap:break-word;
+  }
+  .masthead{max-width:var(--maxw); margin:0 auto; padding:22px 32px 0;}
+  .masthead__row{display:flex; align-items:baseline; justify-content:space-between; gap:20px; padding-bottom:12px; padding-right:58px; border-bottom:2px solid var(--ink);}
+  .masthead__brand{font-family:var(--display); font-weight:900; font-size:24px; letter-spacing:-.02em; color:var(--ink);}
+  .masthead__brand span{color:var(--accent);}
+  .masthead__tag{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); text-align:right;}
+  .masthead__sub{display:flex; justify-content:space-between; gap:16px; font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); padding:8px 0 0;}
+  .masthead__sub a{color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule);}
+  .masthead__sub a:hover{color:var(--accent); border-color:var(--accent);}
+
+  .lede{max-width:var(--maxw); margin:0 auto; padding:64px 32px 0;}
+  .lede__inner{max-width:900px;}
+  .kicker{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:12px; margin-bottom:22px;}
+  .kicker::before{content:""; width:34px; height:1px; background:var(--accent); display:inline-block;}
+  h1.title{font-family:var(--display); font-weight:900; font-size:clamp(34px,5.4vw,62px); line-height:1.03; letter-spacing:-.025em; color:var(--ink); margin:0 0 24px; text-wrap:balance;}
+  .deck{font-size:clamp(19px,2vw,23px); line-height:1.5; font-style:italic; color:var(--dim); max-width:48ch; margin:0 0 34px;}
+  .metaline{display:flex; flex-wrap:wrap; gap:10px 26px; align-items:center; font-family:var(--mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); border-top:1px solid var(--rule); padding-top:16px;}
+  .metaline b{color:var(--text); font-weight:500;}
+  .stamp{margin-left:auto; font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); border:1.5px solid var(--accent); border-radius:3px; padding:5px 11px; transform:rotate(-2.2deg); opacity:.92; white-space:nowrap;}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:56px 32px 40px;}
+  article{max-width:var(--measure); margin:0 auto; position:relative;}
+  article p{margin:0 0 1.35em;}
+  .lead{font-size:1.1em; line-height:1.62; color:var(--ink);}
+  .lead--drop::first-letter{float:left; font-family:var(--display); font-weight:900; font-size:3.4em; line-height:.8; padding:6px 12px 0 0; color:var(--accent);}
+  h2{font-family:var(--display); font-weight:600; font-size:clamp(25px,3.1vw,33px); line-height:1.12; letter-spacing:-.015em; color:var(--ink); margin:64px 0 20px; position:relative; text-wrap:balance;}
+  h2 .num{position:absolute; left:-3.6rem; top:.15em; font-family:var(--mono); font-size:.62em; font-weight:500; color:var(--accent);}
+  h3{font-family:var(--mono); font-size:12px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--accent-2); margin:40px 0 12px;}
+  strong{color:var(--ink); font-weight:600;}
+  a{color:var(--accent); text-decoration:underline; text-underline-offset:2px; text-decoration-thickness:1px;}
+
+  .framing{border:1px solid var(--rule-strong); background:var(--paper-2); padding:26px 28px 22px; margin:34px 0; position:relative;}
+  .framing__label{position:absolute; top:-11px; left:22px; background:var(--paper); padding:0 10px; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.2em; text-transform:uppercase; color:var(--dim);}
+  .framing p:last-child{margin-bottom:0;}
+  .framing ol{margin:10px 0 0; padding-left:1.4em;}
+  .framing li{margin-bottom:8px;}
+
+  .eq{font-family:var(--mono); font-size:15.5px; line-height:1.9; text-align:center; background:var(--paper-2); border:1px solid var(--rule); border-radius:2px; padding:18px 16px; margin:26px 0; overflow-x:auto; color:var(--ink);}
+  .eq--lead{border-left:3px solid var(--accent);}
+  code{font-family:var(--mono); font-size:.88em; background:var(--accent-soft); color:var(--accent); padding:1px 5px; border-radius:2px;}
+
+  .camps{list-style:none; margin:26px 0 34px; padding:0; counter-reset:camp; border-top:1px solid var(--rule);}
+  .camps li{counter-increment:camp; position:relative; padding:18px 0 18px 58px; border-bottom:1px solid var(--rule); font-size:1.02em;}
+  .camps li::before{content:counter(camp,decimal-leading-zero); position:absolute; left:0; top:16px; font-family:var(--display); font-weight:900; font-size:26px; color:var(--accent); line-height:1;}
+  .camps b{display:block; font-family:var(--display); font-weight:600; font-size:1.06em; letter-spacing:-.01em; color:var(--ink);}
+
+  .tablewrap{overflow-x:auto; border:1px solid var(--rule-strong); background:var(--paper-2); margin:30px 0;}
+  table{border-collapse:collapse; width:100%; min-width:520px; font-size:15px; line-height:1.45;}
+  thead th{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); text-align:left; padding:12px 14px; border-bottom:1.5px solid var(--rule-strong); vertical-align:bottom;}
+  tbody td{padding:12px 14px; border-bottom:1px solid var(--rule); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--accent-soft);}
+  td.prop{font-weight:600; color:var(--ink); width:40%;}
+  td.c{text-align:center; font-family:var(--mono); font-size:13px;}
+  td.win{color:var(--accent-2); font-weight:600;}
+  .tcap{font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:.04em; margin-top:-18px; margin-bottom:30px; line-height:1.5;}
+
+  .reading{counter-reset:r; list-style:none; padding:0; margin:24px 0 34px;}
+  .reading li{counter-increment:r; position:relative; padding:0 0 20px 46px;}
+  .reading li::before{content:counter(r); position:absolute; left:0; top:1px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:13px; font-weight:600; color:var(--accent); border:1px solid var(--accent); border-radius:50%;}
+
+  .pull{margin:44px 0; padding-left:26px; border-left:3px solid var(--accent);}
+  .pull p{font-family:var(--display); font-weight:400; font-size:clamp(22px,2.6vw,28px); line-height:1.28; letter-spacing:-.01em; color:var(--ink); font-style:italic; margin:0;}
+
+  .forks{list-style:none; padding:0; margin:26px 0 20px;}
+  .forks li{position:relative; padding:16px 0 16px 34px; border-top:1px solid var(--rule);}
+  .forks li:last-child{border-bottom:1px solid var(--rule);}
+  .forks li::before{content:""; position:absolute; left:0; top:20px; width:14px; height:14px; border:1.5px solid var(--accent); border-radius:2px;}
+  .forks .fid{font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:.1em; color:var(--accent); margin-right:8px;}
+  .forks .q{color:var(--ink); font-weight:500;}
+  .forks .tr{display:block; margin-top:6px; font-size:.9em; color:var(--dim); font-style:italic;}
+
+  .cross{border:1px solid var(--rule-strong); background:var(--paper-2); padding:24px 26px 8px; margin:40px 0; position:relative;}
+  .cross .framing__label{background:var(--paper);}
+  .cross ul{list-style:none; padding:0; margin:0;}
+  .cross li{position:relative; padding:8px 0 12px 22px; font-size:.98em; border-top:1px solid var(--rule);}
+  .cross li:first-child{border-top:none;}
+  .cross li::before{content:"\2014"; position:absolute; left:0; top:8px; color:var(--accent);}
+
+  .rabbit{margin-top:60px; border-top:2px solid var(--ink); padding-top:24px;}
+  .rabbit > h2{font-size:15px; margin:0 0 10px; letter-spacing:.16em; text-transform:uppercase; font-family:var(--mono); font-weight:600; color:var(--dim);}
+  .rabbit > p{font-size:15px; color:var(--dim); font-style:italic; margin-bottom:6px;}
+  .rabbit__group{margin:30px 0 6px;}
+  .rabbit__group h3{margin:0 0 12px;}
+  .rabbit ul{list-style:none; padding:0; margin:0; font-size:15px; line-height:1.55;}
+  .rabbit li{position:relative; padding:0 0 11px 22px; color:var(--dim);}
+  .rabbit li::before{content:"\2192"; position:absolute; left:0; top:0; color:var(--accent); font-size:13px;}
+  .rabbit li em{color:var(--text); font-style:italic;}
+
+  footer{max-width:var(--maxw); margin:0 auto; padding:34px 32px 70px; border-top:1px solid var(--rule); display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px 28px; font-family:var(--mono); font-size:11.5px; letter-spacing:.05em; color:var(--dim);}
+  footer a{color:var(--accent);}
+
+  .toggle{position:fixed; top:16px; right:16px; z-index:50; background:var(--paper-2); border:1px solid var(--rule-strong); border-radius:50%; width:38px; height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--dim); transition:color .15s ease, border-color .15s ease;}
+  .toggle:hover{color:var(--accent); border-color:var(--accent);}
+  .toggle svg{width:18px; height:18px;}
+  [data-theme="light"] .toggle__moon{display:none;}
+  [data-theme="dark"] .toggle__sun{display:none;}
+  mark{background:var(--mark); color:inherit; padding:0 3px; border-radius:2px;}
+
+  @media (max-width:640px){ .masthead__tag{display:none;} .masthead__sub span:last-child{display:none;} }
+  @media (max-width:900px){
+    body{font-size:18px;}
+    h1.title{font-size:clamp(30px,8vw,48px);}
+    .masthead,main,.lede,footer{padding-left:22px; padding-right:22px;}
+    h2 .num{position:static; display:block; margin-bottom:6px; font-size:.72em;}
+    .tcap{margin-top:-10px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important; transition:none!important;} }
+  ::selection{background:var(--accent); color:var(--paper);}
+  .wow{border:1px solid var(--rule-strong); border-left:3px solid var(--accent); background:var(--paper-2); padding:15px 20px 13px; margin:30px 0 34px; font-size:.97em; line-height:1.62;}
+  .wow__label{display:block; font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--accent); margin-bottom:6px;}
+  .wow p{margin:0;}
+</style>
+</head>
+<body>
+
+<button class="toggle" onclick="toggleTheme()" aria-label="Toggle light and dark theme">
+  <svg class="toggle__sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+  <svg class="toggle__moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+
+<header class="masthead">
+  <div class="masthead__row">
+    <div class="masthead__brand">artificial intelligence exploration<span>.</span></div>
+    <div class="masthead__tag">Written by AI<br>Directed by a human</div>
+  </div>
+  <div class="masthead__sub">
+    <span><a href="index.html">All debates</a> &middot; Debate 007</span>
+    <span><a href="debate-006-neural-radiance-fields.html">&larr; Debate 006</a> &middot; <a href="debate-008-what-is-deep-learning.html">Next: Debate 008 &rarr;</a></span>
+  </div>
+</header>
+
+<div class="lede">
+  <div class="lede__inner">
+    <div class="kicker">Debate 007</div>
+    <h1 class="title">Static vs contextual embeddings</h1>
+    <p class="deck">One vector per word type, or one per occurrence: a question about the unit of representation that keeps getting argued as if it were about architecture.</p>
+    <div class="metaline">
+      <span>Status: <b>Open</b></span>
+      <span>Draft <b>0.1</b></span>
+      <span>Opened <b>28 Oct 2026</b></span>
+      <span>Editor <b>Divyansh Tripathi</b></span>
+      <span class="stamp">Draft &middot; Not settled</span>
+    </div>
+  </div>
+</div>
+
+<main>
+<article>
+  <h2><span class="num">00</span>Framing: three different questions are hiding in one</h2>
+  <p class="lead lead--drop">Asked as a comparison, the question sounds settled, since contextual won and everyone knows it. Before that can be assessed, three separate questions have to be pulled apart, because they have different answers.</p>
+  <p>The first is about the <strong>unit</strong>. A static embedding gives one vector per word type, so every occurrence of &ldquo;bank&rdquo; gets the same numbers. A contextual embedding gives one vector per token occurrence, so the same word in two sentences gets two different vectors. That is a claim about what is being represented.</p>
+  <p>The second is about the <strong>mechanism</strong>. Something has to read the sentence and produce the token vector, and the history runs from recurrent language models to transformers. That is a claim about architecture, and it is separable from the first question, because you can make a contextual model out of an LSTM and you can make a static one out of a transformer by averaging.</p>
+  <p>The third is about the <strong>training and the frozenness</strong>. Word2vec and GloVe were trained once and then frozen, and in most uses they sat at the bottom of a task-specific network as a lookup table that was either frozen or fine-tuned. BERT is also pretrained and then fine-tuned, so the static-versus-contextual axis has nothing to do with frozen weights. Conflating the two makes the argument look easier than it is.</p>
+  <p>There is also a scale confound sitting under all three, which is that contextual models arrived with much larger corpora and much more compute. Any honest comparison has to say what would have happened to static embeddings given the same budget, and the answer is that they get better too.</p>
+
+  <h2><span class="num">01</span>What a static embedding is</h2>
+  <p>The idea rests on the distributional hypothesis, stated by Harris in 1954 and put memorably by Firth in 1957 as the observation that a word is known by the company it keeps. If meaning is distribution, then a word's meaning can be summarised by the statistics of the contexts it appears in.</p>
+  <p>Word2vec, in 2013, made this practical. Skip-gram predicts the surrounding words from the centre word and trains a small two-layer network whose input weights become the embedding; the trick was negative sampling, which turns the expensive softmax over the whole vocabulary into a handful of binary decisions against sampled noise words. CBOW does the reverse prediction. The vectors that fall out have a linear structure nobody designed, so analogy becomes vector addition and a nearest-neighbour search:</p>
+  <div class="eq eq--lead">king &minus; man + woman &asymp; queen</div>
+  <p>GloVe, in 2014, took the global co-occurrence matrix instead of sampled windows and fitted a log-bilinear factorisation to it,</p>
+  <div class="eq">w<sub>i</sub> &middot; w<sub>j</sub> + b<sub>i</sub> + b<sub>j</sub> = log X<sub>ij</sub></div>
+  <p>which is a different route to the same kind of object. FastText, in 2016, represented each word as the sum of its character n-gram vectors, which gives a vector to a misspelling and to a word never seen in training.</p>
+  <p>All three produce a table with one row per word. That table is the model. Lookup is a row fetch, there is no computation that depends on the sentence, and the vector for a word is fixed at the moment training ends.</p>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th>Model</th><th>One vector per</th><th>What makes it contextual</th><th>Year</th></tr></thead>
+      <tbody>
+        <tr><td class="prop">word2vec</td><td>word type</td><td class="c">nothing</td><td class="c">2013</td></tr>
+        <tr><td class="prop">GloVe</td><td>word type</td><td class="c">nothing (global counts)</td><td class="c">2014</td></tr>
+        <tr><td class="prop">FastText</td><td>word type, from subwords</td><td class="c">nothing</td><td class="c">2016</td></tr>
+        <tr><td class="prop">ELMo</td><td>token</td><td class="c win">a bidirectional LSTM language model</td><td class="c">2018</td></tr>
+        <tr><td class="prop">BERT</td><td>token</td><td class="c win">a transformer, masked language modelling</td><td class="c">2018</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2><span class="num">02</span>The case for static</h2>
+  <p>The strongest case is not nostalgia, it is that a type-level vector is the right object for a large class of jobs, and it is enormously cheaper.</p>
+  <p>Consider what a static embedding actually buys. It is a table of a few hundred megabytes at most, it needs no forward pass, and retrieval is a nearest-neighbour search in a fixed space, which is the operation that modern vector databases are built to do quickly. For search, deduplication, clustering, topic modelling, recommendation and cross-lingual alignment, the unit of interest genuinely is the word or the phrase, and a per-occurrence vector is an awkward answer to a type-level question. When you want to know whether two documents are about the same thing, you want one vector per document, and the standard way to get it is still to average static vectors or to pool a contextual model down to one.</p>
+  <p>There is a second argument, about interpretability. A static space is a single object that can be projected, rotated, aligned to another language and inspected once. Sense-specific structure lives in it as directions, and the geometry is stable enough that people build dictionaries and cross-lingual maps on top of it. A contextual model has no such single object: its geometry is per-token, per-layer and per-input, which is why interpreting it is a field of its own.</p>
+  <p>The third argument is about the confound. Static embeddings trained on modern-scale corpora are much better than the 2013 versions, and the gain from more data and better objectives is large in both families. If the comparison is 2013 word2vec against 2019 BERT, then most of the gap is attributable to everything that changed at once, and only the ablation tells you how much was contextuality itself.</p>
+
+  <h2><span class="num">03</span>The case that contextuality was necessary</h2>
+  <p>The core argument is polysemy, and it is not a small technicality. A single vector for &ldquo;bank&rdquo; has to serve the financial institution, the river edge and the verb, so it can only be a weighted average of the senses, weighted by their corpus frequencies. For a word whose senses are balanced, that average may be close to none of them. The same holds for parts of speech, where &ldquo;run&rdquo; as a noun and as a verb share a row.</p>
+  <p>Contextual models fix this by construction, and the results were large enough to change the field. ELMo, in 2018, ran a bidirectional language model over the sentence and took a learned combination of its layers as the representation, which immediately improved every task it was plugged into. BERT, in 2018 and 2019, replaced the recurrent encoder with a transformer trained on masked language modelling, and the token vectors it produced became the default input to everything for the next several years.</p>
+  <p>Two findings from the probing literature made the case sharper. The first is that the layers are not interchangeable. Lower layers behave like syntax, higher layers like semantics, and the useful layer differs by task, which is only possible because the representation is computed rather than looked up. The second is that context resolves sense measurably: benchmarks that ask whether two occurrences of a word are used in the same sense, and word-sense disambiguation tasks against a sense inventory, show gains that a static model cannot reach in principle, because a static model's two occurrences are identical by definition.</p>
+  <p>There is also a structural argument. A contextual encoder absorbs the whole pipeline that used to sit downstream of the embeddings, meaning the tagger, the parser and the chunker, into one pretrained object. That is not a claim about the vector so much as a claim about the economics of building systems, and it is a large part of why the change was total.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>The analogy arithmetic was never designed. It falls out of the linear structure that skip-gram happens to produce, and it works cleanly only for the specific pairs people quote. Ask it for the capital of a country it has barely seen and the nearest neighbour is often a word that merely appears in the same contexts.</p></div>
+
+  <h2><span class="num">04</span>The counter-case: less contextual than advertised</h2>
+  <p>The interesting objections are not about polysemy but about how much of the promised contextuality is actually there, and the evidence is uncomfortable for the strong version of the claim.</p>
+  <p>Ethayarajh, in 2019, measured how much a token's vector changes across contexts, and found that in the upper layers of contextual models the representations of different words crowd into a narrow cone, so the variation across contexts shrinks and the geometry becomes anisotropic. The measured contextuality is therefore not uniform across layers, and in the last layers it can be surprisingly low, which is why pooling the final layer is often a poor choice for sentence similarity.</p>
+  <p>Bommasani, Davis and Cardie, in 2020, tested the reduction directly. They projected contextual embeddings down to static ones with a linear map and found that a substantial part of the contextual representation is explained by a static component, meaning the per-word part carries most of the information for many tasks and the contextual part contributes a smaller, task-dependent increment. If a linear projection recovers most of the behaviour, then &ldquo;contextual&rdquo; describes the mechanism more than the information content.</p>
+  <p>There is also the anisotropy and rogue-dimension line of work, which found that a handful of dimensions dominate the geometry of contextual representations and that removing them changes nearest-neighbour behaviour drastically. And there are simple baselines that keep embarrassing company with large pretrained encoders on some probing tasks, which suggests that part of the measured advantage was the probe rather than the representation.</p>
+  <p>None of this says static embeddings are equivalent. It says the difference is smaller and more task-dependent than the headline comparison suggests, and that a model which is contextual by construction need not be contextual in its useful subspace.</p>
+
+  <h2><span class="num">05</span>What actually changed</h2>
+  <p>Set against all of that, the honest accounting of what the shift delivered is narrower and more concrete than &ldquo;context&rdquo;.</p>
+  <p>The unit changed from type to token, which made sense resolution possible and made every downstream representation variable-length. The mechanism changed from a lookup table to a function of the sequence, which is why inference cost became a question at all: a contextual encoder must run, and running it over a long context is exactly the memory problem the serving chapter is about. Tokenisation changed from whole words to subwords, which removed the out-of-vocabulary problem and made the vocabulary a design decision rather than a corpus artefact. And the economics changed, in that one pretrained model replaced a stack of task-specific models.</p>
+  <p>What did not change is the distributional hypothesis. A contextual encoder is still learning from co-occurrence, only now the co-occurrence statistics are conditioned on the whole sequence rather than collapsed per word. The old idea did not lose, it got a much richer estimator.</p>
+
+  <h2><span class="num">06</span>What the evidence, read together, suggests</h2>
+  <p>This is a reading, not a verdict. The editor decides what stands.</p>
+  <p>The technical answer is that static embeddings assign one vector per word type from corpus statistics and contextual embeddings assign one vector per token occurrence from a function of the whole sequence. The useful answer is that the two are not rival answers to one question but answers to different questions, and the choice depends on whether the unit of the task is a word type or an occurrence.</p>
+  <p>The evidence supports a middle position that neither camp likes. Contextuality is necessary for sense-dependent tasks and it is what made the modern stack possible, so it is not a fad. But the measured contextuality of the popular models is lower than the rhetoric, much of their behaviour reduces to a static component, and the comparison that made the case so convincing bundled context together with scale, data and objectives. The clean statement is that contextual representations were the right engineering move for a reason that was partly different from the reason given at the time, which is the same pattern the deep belief network chapter found.</p>
+
+  <div class="wow"><span class="wow__label">Tangent</span><p>A contextual model can be turned back into a static one by averaging its vectors over a corpus, and the result is a usable word-vector table. The two families are therefore not disjoint objects. One is a function, the other is that function's average.</p></div>
+
+  <div class="cross">
+    <span class="framing__label">Cross-debate notes</span>
+    <ul>
+      <li><strong>Debate 004 (vLLM and the KV cache)</strong> is the direct consequence of this chapter. A contextual embedding is a function of the whole sequence, so the sequence has to be re-read on every step, and the cache exists because of that. Static embeddings need no cache at all, which is a fair summary of the trade the field made.</li>
+      <li><strong>Debate 002 (activations)</strong> asked what an activation function has to do, and part of the answer was about frequency. The same question appears in the anisotropy result, where the representation's usable variation is decided by the geometry of the space rather than by the capacity of the encoder.</li>
+      <li><strong>Debate 006 (radiance fields)</strong> found that a component's power is a prior rather than a capability. The same is true here: the distributional hypothesis is the prior, and contextuality is a better estimator of it rather than a different idea.</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">07</span>Open forks &mdash; your call</h2>
+  <p>Nothing below is decided. Each is a fork with a real trade-off, surfaced rather than guessed.</p>
+  <ul class="forks">
+    <li><span class="fid">F1</span><span class="q">Is the chapter a history, a technical comparison, or a decision guide?</span><span class="tr">The three want different depths and different verdicts.</span></li>
+    <li><span class="fid">F2</span><span class="q">How much mathematics?</span> Keep the skip-gram objective and the co-occurrence factorisation as sketches, or develop negative sampling, the GloVe loss and the linear-projection reduction properly?</li>
+    <li><span class="fid">F3</span><span class="q">Do we run an experiment?</span> A small word2vec on a modest corpus, a contextual encoder on the same data, then the linear projection from contextual to static.<span class="tr">This is the experiment the chapter actually needs.</span></li>
+    <li><span class="fid">F4</span><span class="q">Does the retrieval side get its own treatment?</span> Sentence embeddings, contrastive training and the models behind vector search are where the debate is still commercially live, and they are neither of the two classic positions.</li>
+    <li><span class="fid">F5</span><span class="q">How much of the anisotropy and rogue-dimension literature?</span> It is the strongest evidence against the naive story, and it is technical enough to double the chapter's length.</li>
+    <li><span class="fid">F6</span><span class="q">Verdict policy.</span> Does a chapter whose subject has a clear practical winner still get marked settled, or does the winner not settle the argument?</li>
+    <li><span class="fid">F7</span><span class="q">Deliverable shape.</span> Same as before?</li>
+  </ul>
+
+<section class="rabbit">
+    <h2>Further down the rabbit hole</h2>
+    <p>Everything below is real, and grouped so you can go as deep as you want.</p>
+
+    <div class="rabbit__group">
+      <h3>The static era</h3>
+      <ul>
+        <li>Mikolov et al. <em>Efficient estimation of word representations in vector space.</em> 2013. arXiv:1301.3781.</li>
+        <li>Mikolov et al. <em>Distributed representations of words and phrases and their compositionality.</em> NIPS 2013. arXiv:1310.4546.</li>
+        <li>Pennington, Socher, Manning. <em>GloVe: global vectors for word representation.</em> EMNLP 2014.</li>
+        <li>Bojanowski et al. <em>Enriching word vectors with subword information.</em> 2016. arXiv:1607.04606.</li>
+        <li>Levy, Goldberg. <em>Neural word embedding as implicit matrix factorization.</em> NIPS 2014. (Why word2vec and GloVe are the same thing in disguise.)</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The contextual turn</h3>
+      <ul>
+        <li>Peters et al. <em>Deep contextualized word representations.</em> NAACL 2018. arXiv:1802.05365.</li>
+        <li>Devlin et al. <em>BERT: pre-training of deep bidirectional transformers for language understanding.</em> NAACL 2019. arXiv:1810.04805.</li>
+        <li>Tenney, Das, Pavlick. <em>BERT rediscovers the classical NLP pipeline.</em> ACL 2019. arXiv:1905.05950.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>How contextual is it, really</h3>
+      <ul>
+        <li>Ethayarajh. <em>How contextual are contextualized word representations?</em> EMNLP 2019. arXiv:1909.00512.</li>
+        <li>Bommasani, Davis, Cardie. <em>Interpreting pretrained contextualized representations via reductions to static embeddings.</em> ACL 2020.</li>
+        <li>Timkey, van Schijndel. <em>All bark and no bite: rogue dimensions in transformer language models.</em> EMNLP 2021. arXiv:2105.11259.</li>
+        <li>Rogers, Kovaleva, Rumshisky. <em>A primer in BERTology.</em> TACL 2020. arXiv:2002.12327.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>The modern embedding stack</h3>
+      <ul>
+        <li>Reimers, Gurevych. <em>Sentence-BERT.</em> EMNLP 2019. arXiv:1908.10084.</li>
+        <li>Gao, Yao, Chen. <em>SimCSE: simple contrastive learning of sentence embeddings.</em> EMNLP 2021. arXiv:2104.08821.</li>
+        <li>Muennighoff et al. <em>MTEB: massive text embedding benchmark.</em> 2022. arXiv:2210.07316.</li>
+      </ul>
+    </div>
+
+    <div class="rabbit__group">
+      <h3>Code</h3>
+      <ul>
+        <li><code>gensim</code> for word2vec, GloVe and FastText.</li>
+        <li><code>transformers</code> and <code>sentence-transformers</code> for the contextual side.</li>
+      </ul>
+    </div>
+  </section>
+</article>
+</main>
+
+<footer>
+  <span>artificial intelligence exploration &middot; Issue 007 &middot; Draft 0.1</span>
+  <span>Direction set by the editor &middot; <a href="https://github.com/TheQMLGuy/artificial-intelligence-exploration">source on GitHub</a></span>
+</footer>
+
+<script>
+  function toggleTheme(){
+    var el=document.documentElement;
+    el.setAttribute('data-theme', el.getAttribute('data-theme')==='dark'?'light':'dark');
+  }
+</script>
+</body>
+</html>
